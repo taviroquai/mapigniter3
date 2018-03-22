@@ -1,0 +1,27 @@
+{
+    "server": {
+        "endpoint": "http://localhost:3333"
+    },
+    "login": {
+        "error": false,
+        "email": "",
+        "pwd": ""
+    },
+    "profile": {
+        "user": false
+    },
+    "todos": {
+        "loading": false,
+        "items": [],
+        "filter": "all",
+        "sort": {
+            "column": "description",
+            "direction": "ascending"
+        },
+        "form": {
+            "id": null,
+            "description": "",
+            "complete": false
+        }
+    }
+}

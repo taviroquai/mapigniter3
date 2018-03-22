@@ -1,0 +1,15 @@
+client/node_modules
+client/public/config.json
+client/build
+client/package-lock.json
+client/yarn.lock
+
+server/node_modules
+server/tmp
+server/.env
+server/package-lock.json
+server/yarn.lock
+server/database/development.sqlite
+
+# Others
+.editorconfig

@@ -1,0 +1,22 @@
+{
+    "loading": "Loading...",
+    "Email address": "E-mail address",
+    "Password": "Password",
+    "Login": "Login",
+    "Error": "An Error Occured",
+    "Wrong email or password or the account is not enabled": "Wrong email or password or the account is not enabled.",
+    "Recover Password": "Recover Password",
+
+    "Start Recover Password": "Start Recover Password",
+    "Success": "Success",
+    "An email was sent with instructions to recover password.": "An email was sent with instructions to recover password.",
+    "Back to Login": "Back to Login",
+
+    "Password confirmation": "Password confirmation",
+    "Reset Password": "Reset Password",
+    "The password was changed successfuly. You can now login.": "The password was changed successfuly. You can now login.",
+    "Please check errors": "Please check errors",
+
+    "Dashboard": "Dashboard",
+    "Visits": "Visits"
+}

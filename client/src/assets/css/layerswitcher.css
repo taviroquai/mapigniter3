@@ -1,0 +1,34 @@
+
+#layer-switcher ul {
+    list-style-type: none;
+}
+
+#layer-switcher > ul {
+    margin-top: 0;
+    padding-left: 0;
+}
+
+#layer-switcher > ul ul {
+    padding-left: 1rem;
+}
+
+#layer-switcher li {
+    border-top: dashed #d0d0d0 1px;
+}
+
+#layer-switcher table {
+    width: 100%;
+}
+
+#layer-switcher td:nth-child(2) {
+    padding-left: 1rem;
+}
+
+#layer-switcher .activate {
+    width: 20px;
+}
+
+#layer-switcher .buttons {
+    min-width: 76px;
+    text-align: right;
+}

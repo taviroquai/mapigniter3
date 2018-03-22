@@ -1,0 +1,22 @@
+{
+    "loading": "A carregar...",
+    "Email address": "Endereço de e-mail",
+    "Password": "Password",
+    "Login": "Login",
+    "Error": "ocorreu um erro",
+    "Wrong email or password or the account is not activated": "E-mail ou password incorrecta ou a conta está desativada.",
+    "Recover Password": "Recuperar password",
+
+    "Start Recover Password": "Inicio de Recuperação da Password",
+    "Success": "Successo",
+    "An email was sent with instructions to recover password.": "Foi enviado um email com instruções para continuar.",
+    "Back to Login": "Voltar ao login",
+
+    "Password confirmation": "Confirmação da password",
+    "Reset Password": "Alterar Password",
+    "The password was changed successfuly. You can now login.": "A password foi alterada com sucesso. Pode agora iniciar sessão.",
+    "Please check errors": "Por favor verifique os erros",
+
+    "Dashboard": "Resumo",
+    "Visits": "Visitas"
+}

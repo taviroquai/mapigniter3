@@ -1,0 +1,7 @@
+{
+    "server": { "endpoint": "http://127.0.0.1:3333" },
+    "profile": { "user": false },
+    "layertype": { "form": {}, "items": [], "sortc": "id", "sortd": "ascending" },
+    "projection": { "form": {}, "sortc": "id", "sortd": "ascending" },
+    "layer": { "form": {}, "sortc": "id", "sortd": "ascending", "types": [] }
+}
