@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import sanitizeHtml from 'sanitize-html';
 import Store, { withStore } from 'react-observable-store';
-import { Segment, Card, Image } from 'semantic-ui-react';
+import { Segment, Grid, Card, Image } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import Actions from '../actions.js';
 
@@ -22,28 +22,30 @@ class PublicHome extends Component {
                         There are no maps publish yet :)
                     </Segment>
                 ) : (
-                    <Card.Group itemsPerRow="4">
+                    <Grid>
                         { this.props.maps.map((map, i) => (
-                            <Card key={i}>
-                                <Link to={'map/'+map.id}>
-                                    <Image src={serverUrl+'/'+map.id+'/'+map.image} />
-                                </Link>
-                                <Card.Content>
-                                    <Card.Header>
-                                        {map.title}
-                                    </Card.Header>
-                                    <Card.Meta>
-                                        <span className='date'>
-                                            {map.created_at}
-                                        </span>
-                                    </Card.Meta>
-                                    <Card.Description>
-                                        <div dangerouslySetInnerHTML={{__html: sanitizeHtml(map.description)}}></div>
-                                    </Card.Description>
-                                </Card.Content>
-                            </Card>
+                            <Grid.Column mobile={16} tablet={8} computer={4} textAlign="center">
+                                <Card key={i} centered>
+                                    <Link to={'map/'+map.id}>
+                                        <Image src={serverUrl+'/'+map.id+'/'+map.image} />
+                                    </Link>
+                                    <Card.Content>
+                                        <Card.Header>
+                                            {map.title}
+                                        </Card.Header>
+                                        <Card.Meta>
+                                            <span className='date'>
+                                                {map.created_at}
+                                            </span>
+                                        </Card.Meta>
+                                        <Card.Description>
+                                            <div dangerouslySetInnerHTML={{__html: sanitizeHtml(map.description)}}></div>
+                                        </Card.Description>
+                                    </Card.Content>
+                                </Card>
+                            </Grid.Column>
                         ))}
-                    </Card.Group>
+                    </Grid>
                 )}
             </div>
         );
