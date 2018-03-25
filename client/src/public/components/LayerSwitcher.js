@@ -8,13 +8,13 @@ class LayerSwitcher extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            expanded: {}
+            expandedItems: {}
         }
     }
 
     onClickExpand(e, item) {
         var state = this.state
-        state.expanded[item.id] = !state.expanded[item.id]
+        state.expandedItems[item.id] = !state.expandedItems[item.id]
         this.setState({state})
     }
 
@@ -36,17 +36,20 @@ class LayerSwitcher extends Component {
             <div id="layer-switcher">
                 <ul>
                     { layers.map(item => item.layers ?
-                        <LayerSwitcherGroup key={item.id} {...item}
-                            active={this.props.active}
-                            expanded={this.state.expanded}
+                        <LayerSwitcherGroup
+                            key={item.id}
+                            group={item}
+                            activeItems={this.props.activeItems}
+                            expandedItems={this.state.expandedItems}
                             onClick={this.props.onClick}
                             onClickExpand={this.onClickExpand.bind(this)}
                             onClickZoom={this.props.onClickZoom}
                             getLayersWithExtent={this.getLayersWithExtent}
                         /> :
-                        <LayerSwitcherLayer key={item.id} {...item}
-                            active={this.props.active}
-                            expanded={this.state.expanded}
+                        <LayerSwitcherLayer key={item.id}
+                            layer={item}
+                            activeItems={this.props.activeItems}
+                            expandedItems={this.state.expandedItems}
                             onClick={this.props.onClick}
                             onClickExpand={this.onClickExpand.bind(this)}
                             onClickZoom={this.props.onClickZoom}

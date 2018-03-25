@@ -4,8 +4,15 @@ import LayerSwitcherLayer from './LayerSwitcherLayer';
 
 class LayerSwitcherGroup extends Component {
 
+    isDisabled() {
+        return this.props.disabled || (
+            this.props.parentId
+                && (this.props.activeItems.indexOf(this.props.parentId) === -1)
+            )
+    }
+
     render() {
-        const group = this.props
+        const group = this.props.group
         return (
             <li key={group.id}>
                 <table>
@@ -13,7 +20,8 @@ class LayerSwitcherGroup extends Component {
                         <tr>
                             <td className="activate">
                                 <Checkbox toggle
-                                    checked={this.props.active.indexOf(group.id) > -1}
+                                    checked={this.props.activeItems.indexOf(group.id) > -1}
+                                    disabled={this.isDisabled.call(this)}
                                     onClick={e =>this.props.onClick(e, group)}
                                 />
                             </td>
@@ -21,7 +29,7 @@ class LayerSwitcherGroup extends Component {
                             <td className="buttons">
                                 { group.layers && group.layers.length ? (
                                     <Button basic icon size='mini' onClick={e => this.props.onClickExpand(e, group)}>
-                                        <Icon fitted name={this.props.expanded[group.id] ?
+                                        <Icon fitted name={this.props.expandedItems[group.id] ?
                                             'caret up' :
                                             'caret down'}
                                         />
@@ -35,21 +43,28 @@ class LayerSwitcherGroup extends Component {
                                 <div dangerouslySetInnerHTML={{__html: group.layer.description}}></div>
                             </td>
                         </tr>
-                        { this.props.expanded[group.id] ? (
+                        { this.props.expandedItems[group.id] ? (
                             <tr>
                                 <td colSpan="3">
                                     <ul>
                                         { group.layers.map(layer => layer.layers ?
-                                            <LayerSwitcherGroup key={layer.id} {...layer}
-                                                active={this.props.active}
-                                                expanded={this.props.expanded}
+                                            <LayerSwitcherGroup key={layer.id}
+                                                group={layer}
+                                                activeItems={this.props.activeItems}
+                                                expandedItems={this.props.expandedItems}
+                                                parentId={group.id}
+                                                disabled={this.isDisabled()}
                                                 onClick={this.props.onClick}
                                                 onClickExpand={this.props.onClickExpand}
                                                 onClickZoom={this.props.onClickZoom}
+                                                getLayersWithExtent={this.props.getLayersWithExtent}
                                             /> :
-                                            <LayerSwitcherLayer key={layer.id} {...layer}
-                                                active={this.props.active}
-                                                expanded={this.props.expanded}
+                                            <LayerSwitcherLayer key={layer.id}
+                                                layer={layer}
+                                                activeItems={this.props.activeItems}
+                                                expandedItems={this.props.expandedItems}
+                                                parentId={group.id}
+                                                disabled={this.isDisabled()}
                                                 onClick={this.props.onClick}
                                                 onClickExpand={this.props.onClickExpand}
                                                 onClickZoom={this.props.onClickZoom}

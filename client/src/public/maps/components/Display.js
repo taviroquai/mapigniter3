@@ -9,13 +9,13 @@ class Display extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            active: [],
+            activeItems: [],
             zoomToLayer: null,
             featureInfo: null
         }
         this.props.current.layers.map(item => {
-            if (this.state.active.indexOf(item.id)) {
-                this.state.active.push(item.id)
+            if (this.state.activeItems.indexOf(item.id)) {
+                this.state.activeItems.push(item.id)
             }
             return item
         })
@@ -23,9 +23,9 @@ class Display extends Component {
 
     setActive(item) {
         var state = this.state
-        const index = state.active.indexOf(item.id)
-        if (index === -1) state.active.push(item.id)
-        else state.active.splice(index, 1)
+        const index = state.activeItems.indexOf(item.id)
+        if (index === -1) state.activeItems.push(item.id)
+        else state.activeItems.splice(index, 1)
         this.setState(state)
     }
 
@@ -59,7 +59,7 @@ class Display extends Component {
                 <Grid>
                     <Grid.Column mobile={16} tablet={8} computer={4}>
                         <LayerSwitcher map={current}
-                            active={this.state.active}
+                            activeItems={this.state.activeItems}
                             onClick={(e, item) => this.setActive(item)}
                             onClickZoom={(e, item) => this.setZoomToLayer(item)}
                         />
@@ -67,7 +67,7 @@ class Display extends Component {
                     </Grid.Column>
                     <Grid.Column mobile={16} tablet={8} computer={12}>
                         <PublicMap {...current }
-                            active={this.state.active}
+                            activeItems={this.state.activeItems}
                             zoomToLayer={this.state.zoomToLayer}
                             onZoomDone={this.onZoomDone.bind(this)}
                             height="540px"
