@@ -1,5 +1,8 @@
 'use strict'
 
+const ps = require('child_process')
+const fs = require('fs')
+var gdal = require("gdal")
 const Model = use('Model')
 const { validate } = use('Validator')
 const uuidV4 = require('uuid/v4')
@@ -27,10 +30,6 @@ class Layer extends Model {
      */
     static get hidden () {
       return ['postgis_pass']
-    }
-
-    type () {
-        return this.belongsTo('App/Models/LayerType')
     }
 
     projection () {
@@ -135,6 +134,79 @@ class Layer extends Model {
                 resolver(false);
             });
         });
+    }
+
+    async gdalInfo() {
+        return new Promise(resolver => {
+            const path = this.getStoragePath()
+            var datasource = '';
+            switch(this.type) {
+                case 'KML':
+                    datasource = path + '/' + this.kml_filename;
+                    break;
+                default:
+                    return resolver('')
+            }
+            var dataset = gdal.open(datasource);
+            var result = []
+            dataset.layers.forEach(function(layer, i) {
+                result.push({
+                    id: i,
+                    name:layer.name,
+                    extent: layer.getExtent(),
+                    srs: layer.srs,
+                    //geojson:
+                })
+            });
+            resolver(result)
+            /*
+            var layer = dataset.layers.get(0);
+            const cmd = 'ogrinfo ' + datasource
+            ps.exec(cmd, (err, stdout, stderr) => {
+                if (err) return resolver(err)
+                resolver(stdout.split("\n"))
+            });
+            */
+        })
+    }
+
+    async gdalGeoJSON(featureTypeId) {
+        return new Promise(resolver => {
+            const path = this.getStoragePath()
+            const filename = this.getStoragePath()+'/out.json'
+            if (fs.existsSync(filename)) {
+                const content = fs.readFileSync(filename, 'utf8')
+                return resolver(content)
+            }
+            var datasource = '';
+            switch(this.type) {
+                case 'KML':
+                    datasource = path + '/' + this.kml_filename;
+                    break;
+                default:
+                    return resolver('')
+            }
+            var name, dataset = gdal.open(datasource);
+            dataset.layers.forEach(function(layer, i) {
+                if (i === featureTypeId) name = layer.name
+            });
+            /*
+            var driver, dataset = gdal.open(datasource);
+            gdal.drivers.forEach(drv => {
+                console.log(drv.description)
+                if (/geojson/i.test(drv.description)) driver = drv
+            })
+            const output = driver.createCopy(filename, dataset)
+            output.flush()
+            output.close()
+            resolver(fs.readFileSync(filename, 'utf8'))
+            */
+            const cmd = 'ogr2ogr -f "GeoJSON" ' + filename + ' ' + datasource + ' ' + name
+            ps.exec(cmd, (err, stdout, stderr) => {
+                if (err) return resolver(err)
+                resolver(fs.readFileSync(filename, 'utf8'))
+            });
+        })
     }
 
 }

@@ -12,10 +12,21 @@
 | http://adonisjs.com/guides/routing
 |
 */
-
+const { graphqlAdonis, graphiqlAdonis  } = require('apollo-server-adonis');
+const graphqlSchema = require('../api/Schema');
 const Route = use('Route')
 
 Route.on('/').render('welcome')
+
+Route.post('/api', graphqlAdonis({ schema: graphqlSchema }));
+Route.get('/api', graphqlAdonis({ schema: graphqlSchema }));
+
+Route.get('/graphiql',
+    graphiqlAdonis({
+        schema: graphqlSchema,
+        endpointURL: '/api'
+    })
+);
 
 Route.get('login', 'UserController.login').middleware('auth');
 Route.get('user', 'UserController.show');
