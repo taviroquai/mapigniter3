@@ -1,13 +1,42 @@
 import Store from 'react-observable-store';
-import Server from '../server';
+import ApolloClient from "apollo-boost";
+import gql from "graphql-tag";
 
-const reload = async () => {
-    const url = Store.get('server.endpoint') + '/public/map';
-    const t = setTimeout(() => { Store.update('home', {loading: true}) }, 1000);
-    const result = await Server.get(url)
-    clearTimeout(t)
-    Store.update('home', {loading: false})
-    if (result && result.success) Store.set('home.maps', result.items);
+const reload = () => {
+    const client = new ApolloClient({
+        uri: Store.get('server.endpoint') + '/api'
+    });
+    const query = gql`
+    {
+        maps {
+            id
+            title
+            description
+            image
+            projection {
+                srid
+            }
+            layers {
+                id
+                layer {
+                    id
+                    title
+                    description
+                    type
+                    projection {
+                        id
+                        srid
+                    }
+                }
+            }
+        }
+    }`
+    client.query({ query }).then(r => {
+        Store.update('home', {loading: r.loading})
+        if ((r.networkStatus === 7) && !r.errors) {
+            Store.set('home.maps', r.data.maps);
+        }
+    });
 };
 
 const saveRequest = async (item, auth_token) => {

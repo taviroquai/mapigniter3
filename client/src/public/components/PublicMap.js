@@ -74,7 +74,7 @@ class PublicMap extends Component {
             var layers = []
             props.layers.map((item, i) => {
                 if (item.layer.type === 'GROUP') {
-                    item.layers = props.layers.filter(sub => sub.parent_id === item.layer.id)
+                    item.layers = props.layers.filter(sub => ''+sub.parent_id === item.layer.id)
                 }
                 layers.push(item)
                 return item

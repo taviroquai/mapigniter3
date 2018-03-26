@@ -24,7 +24,9 @@ class PublicHome extends Component {
                 ) : (
                     <Grid>
                         { this.props.maps.map((map, i) => (
-                            <Grid.Column mobile={16} tablet={8} computer={4} textAlign="center">
+                            <Grid.Column mobile={16} tablet={8} computer={4}
+                                key={i}
+                                textAlign="center">
                                 <Card key={i} centered>
                                     <Link to={'map/'+map.id}>
                                         <Image src={serverUrl+'/'+map.id+'/'+map.image} />

@@ -26,7 +26,7 @@ class LayerSwitcher extends Component {
         var layers = []
         this.props.map.layers.map((item, i) => {
             if (item.layer.type === 'GROUP') {
-                item.layers = this.props.map.layers.filter(sub => sub.parent_id === item.layer.id)
+                item.layers = this.props.map.layers.filter(sub => ''+sub.parent_id === item.layer.id)
             }
             layers.push(item)
             return item
