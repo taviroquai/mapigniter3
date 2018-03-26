@@ -103,14 +103,11 @@ class PublicMap extends Component {
      * @param  {Number}      id The layer id
      * @return {Object|null} The search result
      */
-    findLayerById(id) {
-        let result = null;
-        this.olMap.getLayers().forEach(item => {
+    findLayerById(layers, id, result = null) {
+        layers.forEach(item => {
             if (item.get('id') === id) result = item
             else if (item instanceof OlGroup) {
-                item.getLayers().forEach(sub => {
-                    if (sub.get('id') === id) result = sub
-                })
+                result = result || this.findLayerById(item.getLayers(), id, result)
             }
         })
         return result;
@@ -162,9 +159,9 @@ class PublicMap extends Component {
      * @param  {Object} nextProps The next properties
      */
     componentWillReceiveProps(nextProps) {
-        this.setActiveFromProps(nextProps.active || [])
+        this.setActiveFromProps(nextProps.activeItems || [])
         if (nextProps.zoomToLayer) {
-            const layer = this.findLayerById(nextProps.zoomToLayer.id);
+            const layer = this.findLayerById(this.olMap.getLayers(), nextProps.zoomToLayer.id);
             const extent = this.getLayerExtent(layer)
             if (extent) this.olMap.getView().fit(extent);
             this.props.onZoomDone();

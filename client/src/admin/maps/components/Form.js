@@ -35,7 +35,6 @@ class ItemForm extends Component {
             { key: '1', value: 'true', text: 'Yes' },
             { key: '2', value: 'false', text: 'No' },
         ];
-        console.log(''+form.publish)
         return (
             <div className="ui main container">
 

@@ -1,7 +1,15 @@
 {
     "server": { "endpoint": "http://127.0.0.1:3333" },
+    "login": {},
+    "recover": {},
+    "reset": { "token" : ""},
     "profile": { "user": false },
+    "home": { "maps" : [] },
+    "dashboard": { "data1": [], "loading": true },
     "layertype": { "form": {}, "items": [], "sortc": "id", "sortd": "ascending" },
     "projection": { "form": {}, "sortc": "id", "sortd": "ascending" },
-    "layer": { "form": {}, "sortc": "id", "sortd": "ascending", "types": [] }
+    "layer": { "form": {}, "sortc": "id", "sortd": "ascending", "types": [] },
+    "map": { "form": { "layers": [] }, "sortc": "id", "sortd": "ascending" },
+    "maplayer": { "form": { "layers": [] }, "sortc": "id", "sortd": "ascending" },
+    "mapdisplay": { "current": null }
 }

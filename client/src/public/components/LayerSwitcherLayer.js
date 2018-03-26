@@ -4,6 +4,13 @@ import sanitizeHtml from 'sanitize-html';
 
 class LayerSwitcherLayer extends Component {
 
+    isDisabled() {
+        return this.props.disabled || (
+            (this.props.parentId
+                && this.props.activeItems.indexOf(this.props.parentId) === -1)
+            )
+    }
+
     getLegendUrl(item) {
         if(!item.wms_url) return '';
         var url = item.wms_url;
@@ -20,7 +27,7 @@ class LayerSwitcherLayer extends Component {
     };
 
     render() {
-        const layer = this.props
+        const layer = this.props.layer
         return (
             <li key={layer.id}>
                 <table>
@@ -28,7 +35,8 @@ class LayerSwitcherLayer extends Component {
                         <tr>
                             <td className="activate">
                                 <Checkbox toggle
-                                    checked={this.props.active.indexOf(layer.id) > -1}
+                                    checked={this.props.activeItems.indexOf(layer.id) > -1}
+                                    disabled={this.isDisabled.call(this)}
                                     onClick={e =>this.props.onClick(e, layer)}
                                 />
                             </td>
@@ -41,7 +49,7 @@ class LayerSwitcherLayer extends Component {
                                 ) : null }{' '}
                                 { layer.layer.description ? (
                                     <Button basic icon size='mini' onClick={e => this.props.onClickExpand(e, layer)}>
-                                        <Icon fitted name={this.props.expanded[layer.id] ?
+                                        <Icon fitted name={this.props.expandedItems[layer.id] ?
                                             'caret up' :
                                             'caret down'}
                                         />
@@ -49,7 +57,7 @@ class LayerSwitcherLayer extends Component {
                                 ) : null }
                             </td>
                         </tr>
-                        { this.props.expanded[layer.id] ? (
+                        { this.props.expandedItems[layer.id] ? (
                             <tr>
                                 <td></td>
                                 <td colSpan="2">
