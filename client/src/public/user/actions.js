@@ -56,9 +56,7 @@ export const ResetSubmit = async (cb) => {
     const t = setTimeout(() => { Store.update('reset', {loading: true}) }, 1000);
     const form = Store.get('reset');
     const url = Store.get('server.endpoint') + '/reset';
-    console.log('reset form', form);
     const result = await Server.post(url, form);
-    console.log(typeof result, result)
     clearTimeout(t)
     Store.update('reset', {loading: false})
     if (result && result.success) Store.update('reset', {success: true, loading: false})

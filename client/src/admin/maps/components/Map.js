@@ -148,7 +148,6 @@ class Map extends Component {
      * On DOM ready
      */
     componentDidMount() {
-        console.log('map did mount')
         this.olMap.setTarget(document.getElementById('map'));
         var coords = [parseFloat(this.props.coordy), parseFloat(this.props.coordx)];
         coords = OlProj.transform(coords, 'EPSG:4326', 'EPSG:3857');
@@ -639,7 +638,7 @@ class Map extends Component {
         });
     }
     */
-    
+
     /**
      * Create legend URL
      *

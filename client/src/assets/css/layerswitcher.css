@@ -13,11 +13,17 @@
 }
 
 #layer-switcher li {
+    padding-top: 2px;
     border-top: dashed #d0d0d0 1px;
 }
 
 #layer-switcher table {
     width: 100%;
+    border-collapse: collapse;
+}
+
+#layer-switcher td {
+    padding: 0;
 }
 
 #layer-switcher td:nth-child(2) {
@@ -31,4 +37,8 @@
 #layer-switcher .buttons {
     min-width: 76px;
     text-align: right;
+}
+
+#layer-switcher .ui.toggle.checkbox {
+    margin-top: 3px;
 }
