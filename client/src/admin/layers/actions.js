@@ -91,19 +91,43 @@ const setUploadImage = (file) => {
     uploadImage = file;
 }
 
-const submit = async (data = false) => {
-    const t = setTimeout(() => { Store.update('layer', {loading: true}) }, 1000);
+const execSubmitFile = async (url, formData) => {
+    Store.update('layer', {loading: true, error: false});
+    const resultUpload = await Server.post(url, formData, true);
+    if (resultUpload && resultUpload.success) {
+        Store.update('layer', {loading: false, form: resultUpload.item})
+    } else {
+        Store.update('layer', {loading: false, error: resultUpload.error})
+    }
+}
+
+const submitImage = async (layer) => {
+    const url = Store.get('server.endpoint') + '/layer/'+layer.id+'/image';
+    const formData = new FormData();
+    formData.append('image', uploadImage.image);
+    await execSubmitFile(url, formData)
+}
+
+const submitFile = async (layer) => {
+    const url = Store.get('server.endpoint') + '/layer/'+layer.id+'/file';
+    const formData = new FormData();
+    formData.append('file', uploadFile.file);
+    formData.append('field', uploadFile.field);
+    await execSubmitFile(url, formData)
+}
+
+const submit = async () => {
+    Store.update('layer', { loading: true, error: false })
     const item = Store.get('layer.form');
     const url = Store.get('server.endpoint') + '/layer';
-    const formData = new FormData();
-    for (let field in item) formData.append(field, item[field]);
-    if (uploadFile) for (let field in uploadFile) formData.append(field, uploadFile[field]);
-    if (uploadImage) for (let field in uploadImage) formData.append(field, uploadImage[field]);
-    const result = await Server.post(url, formData, true);
-    clearTimeout(t)
-    Store.update('layer', {loading: false, error: false})
-    if (result && result.success) Store.set('layer.form', result.item)
-    else Store.set('layer.error', result.error)
+    const result = await Server.post(url, item);
+    if (result && result.success) {
+        Store.update('layer', {loading: false, form: result.item})
+        if (uploadImage) await submitImage(result.item)
+        if (uploadFile) await submitFile(result.item)
+    } else {
+        Store.update('layer', {loading: false, error: result.error})
+    }
 }
 
 const removeItem = async (item) => {

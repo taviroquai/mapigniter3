@@ -25,12 +25,14 @@ const editNewItem = () => {
         description: '',
         layers: []
     }
+    uploadFile = null
     setTimeout(() => { Store.update('map', {form: item, error: false}); }, 1);
 };
 
 const editItem = async (id = false) => {
     loadProjectionOptions();
     if (!id) return editNewItem();
+    uploadFile = null
     const url = Store.get('server.endpoint') + '/map/' + id;
     const t = setTimeout(() => { Store.update('map', {loading: true}) }, 1000);
     const result = await Server.get(url)
@@ -53,18 +55,30 @@ const setUploadFile = (file) => {
     uploadFile = file;
 }
 
+const submitImage = async (map) => {
+    const url = Store.get('server.endpoint') + '/map';
+    Store.update('map', {loading: true, error: false});
+    const formData = new FormData();
+    formData.append('image', uploadFile.image);
+    const resultUpload = await Server.post(url+'/'+map.id+'/image', formData, true);
+    if (resultUpload && resultUpload.success) {
+        Store.update('map', {loading: false, form: resultUpload.item})
+    } else {
+        Store.update('map', {loading: false, error: resultUpload.error})
+    }
+}
+
 const submit = async () => {
-    const t = setTimeout(() => { Store.update('map', {loading: true}) }, 1000);
+    Store.update('map', { loading: true, error: false })
     const item = Store.get('map.form');
     const url = Store.get('server.endpoint') + '/map';
-    const formData = new FormData();
-    for (let field in item) formData.append(field, item[field]);
-    if (uploadFile) for (let field in uploadFile) formData.append(field, uploadFile[field]);
-    const result = await Server.post(url, formData, true);
-    clearTimeout(t)
-    Store.update('map', {loading: false, error: false})
-    if (result && result.success) Store.set('map.form', result.item)
-    else Store.set('map.error', result.error)
+    const result = await Server.post(url, item);
+    if (result && result.success) {
+        Store.update('map', {loading: false, form: result.item})
+        if (uploadFile) await submitImage(result.item)
+    } else {
+        Store.update('map', {loading: false, error: result.error})
+    }
 }
 
 const removeItem = async (item) => {

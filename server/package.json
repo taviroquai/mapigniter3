@@ -33,6 +33,8 @@
     "gdal": "^0.9.6",
     "graphql": "^0.13.2",
     "graphql-tools": "^2.23.1",
+    "mime-types": "^2.1.18",
+    "mmmagic": "^0.4.6",
     "moment": "^2.21.0",
     "pg": "^7.4.1",
     "request": "^2.85.0",

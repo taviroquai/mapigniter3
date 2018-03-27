@@ -7,6 +7,7 @@ const uuidV4 = require('uuid/v4')
 const Helpers = use('Helpers')
 const Env = use('Env')
 const moment = require('moment')
+const Utils = require('./Utils')
 
 class Map extends Model {
     projection () {
@@ -58,30 +59,9 @@ class Map extends Model {
         return Helpers.publicPath(Env.get('PUBLIC_STORAGE')+'/map/'+this.id);
     }
 
-    hasUpload(request) {
-        const file = request.file('upload', {
-            types: ['image'],
-            size: '4mb'
-        })
-        return file
-    }
-
-    async upload(file, ext) {
-        const itemPublicPath = this.getStoragePath()
-        const filename = uuidV4()+'.'+ext
-        await file.move(itemPublicPath, { name: filename })
-        return file.moved() ? filename : false
-    }
-
-    async processUpload(request, post) {
-        const file = this.hasUpload(request)
-        if (file) {
-            const filename = await this.upload(file, post.upload_type)
-            if (!filename) return false
-            this[post.upload_field] = filename
-            await this.save()
-            return filename
-        } else return true
+    async processImageUpload(request, field, types) {
+        const target = this.getStoragePath()
+        return await Utils.processFileUpload(request, field, types, target)
     }
 }
 
