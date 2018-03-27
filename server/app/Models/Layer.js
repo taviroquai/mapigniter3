@@ -5,6 +5,7 @@ const { validate } = use('Validator')
 const uuidV4 = require('uuid/v4')
 const Helpers = use('Helpers')
 const Env = use('Env')
+const Utils = require('./Utils')
 
 class Layer extends Model {
 
@@ -61,31 +62,9 @@ class Layer extends Model {
         return Helpers.publicPath(Env.get('PUBLIC_STORAGE')+'/layer/'+this.id);
     }
 
-    hasUpload(request, field) {
-        const file = request.file(field, {
-            types: ['application', 'image'],
-            size: '4mb'
-        })
-        return file
-    }
-
-    async upload(file, ext) {
-        const itemPublicPath = this.getStoragePath()
-        const filename = uuidV4()+'.'+ext
-        await file.move(itemPublicPath, { name: filename })
-        return file.moved() ? filename : false
-    }
-
-    async processUpload(request, post, field) {
-        const file = this.hasUpload(request, field)
-
-        if (file) {
-            const filename = await this.upload(file, post[field+'_type'])
-            if (!filename) return false
-            this[post[field+'_field']] = filename
-            await this.save()
-            return filename
-        } else return true
+    async processFileUpload(request, field, types) {
+        const target = this.getStoragePath()
+        return await Utils.processFileUpload(request, field, types, target)
     }
 
     async asGeoJSON(db, query) {

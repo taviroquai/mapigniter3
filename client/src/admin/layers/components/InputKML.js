@@ -15,14 +15,29 @@ class InputKML extends Component {
                             placeholder="Escolha o ficheiro"
                             type="file"
                             accept="application/vnd.google-earth.kml+xml"
-                            onChange={(e) => e.target.files.length && onSelectFile(e, {name: 'kml_filename', type: 'kml', value: e.target.files[0]})}
+                            onChange={e => {
+                                e.preventDefault()
+                                console.log('click kml')
+                                if (e.target.files.length) {
+                                    onSelectFile(e, {
+                                        name: 'kml_filename',
+                                        value: e.target.files[0]
+                                    })
+                                }
+                            }}
                             style={{display: 'none'}}
                         />
 
                     { form.kml_filename ? (
                             <label>
                                 <Button icon color="red" size="mini"
-                                    onClick={(e) => onInputChange(e, {name: 'kml_filename', value: ''})}>
+                                    onClick={e => {
+                                        e.preventDefault()
+                                        onInputChange(e, {
+                                            name: 'kml_filename',
+                                            value: ''
+                                        })
+                                    }}>
                                     <Icon name="remove" />
                                 </Button>{' '}
                                 {form.kml_filename}

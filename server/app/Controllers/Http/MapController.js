@@ -97,10 +97,32 @@ class MapController {
             await item.save()
             await item.load(['layers.layer'])
 
-            // Process file uploads
-            let uploadResult
-            uploadResult = await item.processUpload(request, post)
-            if (!uploadResult) throw new Error('Could not upload image')
+            // Send response
+            response.send({success: true, item });
+        } catch (error) {
+            response.send({success: false, error: error.message})
+        }
+    }
+
+    /**
+     * Store map image
+     *
+     * @param  {Object}  request  The HTTP request
+     * @param  {Object}  response The HTTP response
+     * @return {Promise}
+     */
+    async storeImage ({request, params, response}) {
+        try {
+
+            // Get map
+            const item = await Map.find(params.id)
+            const post = request.post()
+
+            // Process upload
+            item.image = await item.processImageUpload(request, 'image', ['image'])
+            if (!item.image) throw new Error('Could not upload image')
+            await item.save()
+            await item.load(['layers.layer'])
 
             // Send response
             response.send({success: true, item });

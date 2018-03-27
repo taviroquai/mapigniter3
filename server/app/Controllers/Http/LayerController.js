@@ -109,13 +109,61 @@ class LayerController {
             if (item) item.merge(data)
             else item = await Layer.create(data)
             await item.save()
+            await item.load('projection');
 
-            // Process file uploads
-            let uploadResult
-            uploadResult = await item.processUpload(request, post, 'upload_image')
-            if (!uploadResult) throw new Error('Could not upload image')
-            uploadResult = await item.processUpload(request, post, 'upload_file')
-            if (!uploadResult) throw new Error('Could not upload file')
+            // Send response
+            response.send({success: true, item });
+        } catch (error) {
+            response.send({success: false, error: error.message})
+        }
+    }
+
+    /**
+     * Store layer image
+     *
+     * @param  {Object}  request  The HTTP request
+     * @param  {Object}  response The HTTP response
+     * @return {Promise}
+     */
+    async storeImage ({request, params, response}) {
+        try {
+
+            // Get map
+            const item = await Layer.find(params.id)
+            const post = request.post()
+
+            // Process upload
+            item.image = await item.processFileUpload(request, 'image', ['image'])
+            if (!item.image) throw new Error('Could not upload image')
+            await item.save()
+            await item.load('projection');
+
+            // Send response
+            response.send({success: true, item });
+        } catch (error) {
+            response.send({success: false, error: error.message})
+        }
+    }
+
+    /**
+     * Store  file
+     *
+     * @param  {Object}  request  The HTTP request
+     * @param  {Object}  response The HTTP response
+     * @return {Promise}
+     */
+    async storeFile ({request, params, response}) {
+        try {
+
+            // Get map
+            const item = await Layer.find(params.id)
+            const post = request.post()
+
+            // Process upload
+            item[post.field] = await item.processFileUpload(request, 'file', ['application'])
+            if (!item[post.field]) throw new Error('Could not upload file')
+            await item.save()
+            await item.load('projection');
 
             // Send response
             response.send({success: true, item });

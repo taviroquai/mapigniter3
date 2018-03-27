@@ -29,11 +29,7 @@ class Form extends Component {
 
     onSelectFile(e, {name, value, type}) {
         Store.set('map.form.'+name, value.name);
-        Actions.setUploadFile({
-            upload: value,
-            upload_type: type,
-            upload_field: name
-        });
+        Actions.setUploadFile({ image: value });
     }
 
     onSelectImage(e, {name, value, type}) {

@@ -28,6 +28,7 @@ class ImageUpload extends Component {
                         alt={src} />
                     <Button icon color="red" size="mini" style={{position: 'absolute', top: '0px', right: '0px'}}
                         onClick={(e) => {
+                            e.preventDefault()
                             this.setState({image: false})
                             onClear()
                         }}>
@@ -39,11 +40,12 @@ class ImageUpload extends Component {
             return (
                 <div>
                     <input name="upload"
-                        id="fileImport"
+                        id="imageImport"
                         placeholder="Escolha a imagem"
                         type="file"
                         accept="mime/png"
                         onChange={(e) => {
+                            e.preventDefault()
                             if (e.target.files.length) {
                                 this.setImagePreview(e.target.files[0])
                                 onSelectFile(e, {name, type: 'png', value: e.target.files[0]})
@@ -51,7 +53,7 @@ class ImageUpload extends Component {
                         }}
                         style={{display: 'none'}}
                     />
-                <label htmlFor="fileImport" className="ui fluid primary button">
+                <label htmlFor="imageImport" className="ui fluid primary button">
                         <i className="ui upload icon"></i>
                         Choose Image
                     </label>

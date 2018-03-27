@@ -15,7 +15,7 @@ import InputGeoPackage from './InputGeoPackage';
 class FormTabBasic extends Component {
 
     render() {
-        var { form, types, projections, onInputChange, onDropdownChange } = this.props
+        var { form, types, projections, onInputChange, onDropdownChange, onSelectImage } = this.props
         const publishOptions = [
             { key: '1', value: 'true', text: 'Yes' },
             { key: '2', value: 'false', text: 'No' },
@@ -73,7 +73,7 @@ class FormTabBasic extends Component {
                             <label>Image</label>
                             <ImageUpload name="image"
                                 src={form.image && form.id ? this.props.serverUrl+'/'+form.id+'/'+form.image : ''}
-                                onSelectFile={this.props.onSelectImage}
+                                onSelectFile={onSelectImage}
                                 onClear={e => onInputChange(e, {name: 'image', value: ''})}
                             />
                         </Form.Field>

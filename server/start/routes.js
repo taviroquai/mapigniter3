@@ -36,6 +36,7 @@ Route.get('public/map', 'MapController.publishedIndex');
 Route.get('map/:id', 'MapController.item');
 Route.get('map', 'MapController.index');
 Route.post('map', 'MapController.store');
+Route.post('map/:id/image', 'MapController.storeImage');
 Route.delete('map/:id', 'MapController.remove');
 
 Route.get('layertype/:id', 'LayerTypeController.item');
@@ -51,6 +52,8 @@ Route.delete('projection/:id', 'ProjectionController.remove');
 Route.get('layer/:id', 'LayerController.item');
 Route.get('layer', 'LayerController.index');
 Route.post('layer', 'LayerController.store');
+Route.post('layer/:id/image', 'LayerController.storeImage');
+Route.post('layer/:id/file', 'LayerController.storeFile');
 Route.delete('layer/:id', 'LayerController.remove');
 Route.get('layer/resource/:id/:name', 'LayerController.getResource');
 Route.post('layer/postgis/connect', 'LayerController.postgisConnect');
