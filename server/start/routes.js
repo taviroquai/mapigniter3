@@ -13,16 +13,18 @@
 |
 */
 const { graphqlAdonis, graphiqlAdonis  } = require('apollo-server-adonis');
+const { formatError } = require('apollo-errors');
 const graphqlSchema = require('../api/Schema');
 const Route = use('Route')
 
 Route.on('/').render('welcome')
 
-Route.post('/api', graphqlAdonis({ schema: graphqlSchema }));
-Route.get('/api', graphqlAdonis({ schema: graphqlSchema }));
+Route.post('/api', graphqlAdonis({ formatError, schema: graphqlSchema }));
+Route.get('/api', graphqlAdonis({ formatError, schema: graphqlSchema }));
 
 Route.get('/graphiql',
     graphiqlAdonis({
+        formatError,
         schema: graphqlSchema,
         endpointURL: '/api'
     })

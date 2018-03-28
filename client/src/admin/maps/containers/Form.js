@@ -43,6 +43,7 @@ class Form extends Component {
 
     onSubmit(e) {
         e.preventDefault();
+        console.log('submit')
         Actions.submit();
     }
 

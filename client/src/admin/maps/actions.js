@@ -1,5 +1,7 @@
 import Store from 'react-observable-store';
 import Server from '../../server';
+import ApolloBoost from "apollo-boost";
+import gql from "graphql-tag";
 var uploadFile;
 
 const reload = async () => {
@@ -60,25 +62,44 @@ const submitImage = async (map) => {
     Store.update('map', {loading: true, error: false});
     const formData = new FormData();
     formData.append('image', uploadFile.image);
-    const resultUpload = await Server.post(url+'/'+map.id+'/image', formData, true);
-    if (resultUpload && resultUpload.success) {
-        Store.update('map', {loading: false, form: resultUpload.item})
+    const result = await Server.post(url+'/'+map.id+'/image', formData, true);
+    if (result && result.success) {
+        map.image = result.image
+        Store.update('map', {loading: false, form: map})
     } else {
-        Store.update('map', {loading: false, error: resultUpload.error})
+        Store.update('map', {loading: false, error: result.error})
     }
 }
 
 const submit = async () => {
-    Store.update('map', { loading: true, error: false })
+    const client = new ApolloBoost({
+        uri: Store.get('server.endpoint') + '/api'
+    });
+    const query = gql`
+    mutation addMap($title: String!, $seo_slug: String!, $projection_id: Int!, $publish: Boolean!, $id: ID) {
+        addMap(title: $title, seo_slug: $seo_slug, projection_id: $projection_id, publish: $publish, id: $id) {
+            id
+            title
+            seo_slug
+            projection_id
+            coordx
+            coordy
+            publish
+            description
+            zoom
+        }
+    }`
     const item = Store.get('map.form');
-    const url = Store.get('server.endpoint') + '/map';
-    const result = await Server.post(url, item);
-    if (result && result.success) {
-        Store.update('map', {loading: false, form: result.item})
-        if (uploadFile) await submitImage(result.item)
-    } else {
-        Store.update('map', {loading: false, error: result.error})
-    }
+    client.mutate({ mutation: query, variables: item }).then(async (r) => {
+        Store.update('map', {loading: r.loading})
+        if ((r.data) && !r.errors) {
+            Store.update('map', {form: Object.assign(item, r.data.addMap)});
+            console.log('map', Store.get('map.form'))
+            if (uploadFile) await submitImage(r.data.addMap)
+        } else {
+            Store.update('map', {loading: false, error: r.errors})
+        }
+    });
 }
 
 const removeItem = async (item) => {

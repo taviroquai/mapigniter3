@@ -103,7 +103,7 @@ class ItemForm extends Component {
                                 <Form.Field required>
                                     <label>Center X</label>
                                     <Form.Input name="coordx" placeholder='Center X'
-                                        value={form.coordx || 0}
+                                        value={form.coordx || ''}
                                         onChange={onInputChange}
                                     />
                                 </Form.Field>
@@ -112,7 +112,7 @@ class ItemForm extends Component {
                                 <Form.Field required>
                                     <label>Center Y</label>
                                     <Form.Input name="coordy" placeholder='Center Y'
-                                        value={form.coordy || 0}
+                                        value={form.coordy || ''}
                                         onChange={onInputChange}
                                     />
                                 </Form.Field>

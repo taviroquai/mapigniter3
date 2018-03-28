@@ -122,10 +122,9 @@ class MapController {
             item.image = await item.processImageUpload(request, 'image', ['image'])
             if (!item.image) throw new Error('Could not upload image')
             await item.save()
-            await item.load(['layers.layer'])
 
             // Send response
-            response.send({success: true, item });
+            response.send({success: true, image: item.image });
         } catch (error) {
             response.send({success: false, error: error.message})
         }
