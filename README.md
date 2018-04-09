@@ -22,7 +22,7 @@ The file structure was inpired by Redux:
 ## Server
 
 The server is built using:  
- 1. AdonisJS framework - Used for data schema migrations, HTTP and Authentication
+ 1. AdonisJS framework - Used for data schema migrations, HTTP and Authentication (JSON Web Tokens)
  2. ApolloServer - Graphql server for most HTTP communication (except file upload and other non-API features)
 
 ### Server File Struture
