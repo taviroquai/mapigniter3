@@ -14,62 +14,39 @@
 */
 const { graphqlAdonis, graphiqlAdonis  } = require('apollo-server-adonis');
 const { formatError } = require('apollo-errors');
-const graphqlSchema = require('../api/Schema');
+const graphqlPublicSchema = require('../api/PublicSchema');
+const graphqlAdminSchema = require('../api/AdminSchema');
 const Route = use('Route')
 
 Route.on('/').render('welcome')
 
-Route.post('/api', graphqlAdonis({ formatError, schema: graphqlSchema }));
-Route.get('/api', graphqlAdonis({ formatError, schema: graphqlSchema }));
+Route.post('/api', graphqlAdonis({ formatError, schema: graphqlPublicSchema }));
+Route.get('/api', graphqlAdonis({ formatError, schema: graphqlPublicSchema }));
+
+Route.post('/api/admin', graphqlAdonis({ formatError, schema: graphqlAdminSchema })).middleware('auth');
+Route.get('/api/admin', graphqlAdonis({ formatError, schema: graphqlAdminSchema })).middleware('auth');
 
 Route.get('/graphiql',
     graphiqlAdonis({
         formatError,
-        schema: graphqlSchema,
+        schema: graphqlPublicSchema,
         endpointURL: '/api'
     })
 );
 
-Route.get('login', 'UserController.login').middleware('auth');
-Route.get('user', 'UserController.show');
-Route.post('user', 'UserController.store');
+Route.post('login', 'UserController.login');
+Route.get('user', 'UserController.show').middleware('auth');
+Route.post('user', 'UserController.store').middleware('auth');
 Route.get('logout', 'UserController.logout');
 Route.post('recover', 'UserController.recover');
 Route.post('reset', 'UserController.resetPassword');
 
 Route.post('request', 'HttpRequestController.store');
-Route.get('dashboard', 'DashboardController.index');
 
-Route.get('maplayer/:map_id/:id', 'MapLayerController.item');
-Route.get('maplayer/:map_id', 'MapLayerController.index');
-Route.post('maplayer', 'MapLayerController.store');
-Route.delete('maplayer/:id', 'MapLayerController.remove');
-
-Route.get('public/map', 'MapController.publishedIndex');
-Route.get('map/:id', 'MapController.item');
-Route.get('map', 'MapController.index');
-Route.post('map', 'MapController.store');
-Route.post('map/:id/image', 'MapController.storeImage');
-Route.delete('map/:id', 'MapController.remove');
-
-Route.get('layertype/:id', 'LayerTypeController.item');
-Route.get('layertype', 'LayerTypeController.index');
-Route.post('layertype', 'LayerTypeController.store');
-Route.delete('layertype/:id', 'LayerTypeController.remove');
-
-Route.get('projection/:id', 'ProjectionController.item');
-Route.get('projection', 'ProjectionController.index');
-Route.post('projection', 'ProjectionController.store');
-Route.delete('projection/:id', 'ProjectionController.remove');
-
-Route.get('layer/:id', 'LayerController.item');
-Route.get('layer', 'LayerController.index');
-Route.post('layer', 'LayerController.store');
-Route.post('layer/:id/image', 'LayerController.storeImage');
-Route.post('layer/:id/file', 'LayerController.storeFile');
-Route.delete('layer/:id', 'LayerController.remove');
+Route.post('map/:id/image', 'MapController.storeImage').middleware('auth');
+Route.post('layer/:id/upload/:field', 'LayerController.storeFile').middleware('auth');
 Route.get('layer/resource/:id/:name', 'LayerController.getResource');
-Route.post('layer/postgis/connect', 'LayerController.postgisConnect');
+Route.post('layer/postgis/connect', 'LayerController.postgisConnect').middleware('auth');
 Route.get('layer/postgis/:id/geojson', 'LayerController.postgisGeoJSON');
-Route.post('layer/wms/getcapabilities', 'LayerController.getWMSCapabilities');
-Route.post('layer/wfs/getcapabilities', 'LayerController.getWFSCapabilities');
+Route.post('layer/wms/getcapabilities', 'LayerController.getWMSCapabilities').middleware('auth');
+Route.post('layer/wfs/getcapabilities', 'LayerController.getWFSCapabilities').middleware('auth');

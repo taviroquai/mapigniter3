@@ -44,7 +44,7 @@
     "react-dom": "^16.1.1",
     "react-froala-wysiwyg": "^2.7.6",
     "react-i18next": "^7.3.0",
-    "react-observable-store": "^1.0.0",
+    "react-observable-store": "^1.1.0",
     "react-router-dom": "^4.2.2",
     "recharts": "^1.0.0-beta.10",
     "sanitize-html": "^1.18.2",

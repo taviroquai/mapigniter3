@@ -37,12 +37,14 @@ class LayerSwitcherGroup extends Component {
                                 ) : null }
                             </td>
                         </tr>
-                        <tr>
-                            <td></td>
-                            <td colSpan="2">
-                                <div dangerouslySetInnerHTML={{__html: group.layer.description}}></div>
-                            </td>
-                        </tr>
+                        { this.props.expandedItems[group.id] ? (
+                            <tr>
+                                <td></td>
+                                <td colSpan="2">
+                                    <div dangerouslySetInnerHTML={{__html: group.layer.description}}></div>
+                                </td>
+                            </tr>
+                        ) : null }
                         { this.props.expandedItems[group.id] ? (
                             <tr>
                                 <td colSpan="3">

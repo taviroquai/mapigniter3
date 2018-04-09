@@ -3,16 +3,11 @@ const resolvers = require('./resolvers')
 
 // The GraphQL schema in string form
 const typeDefs = `
-    scalar Upload
     type Query {
         maps: [Map]
         map(id: ID!): Map
         layers: [Layer]
         layer(id: ID!, featureTypeId: Int): Layer
-    }
-    type Mutation {
-        addMap(title: String!, publish: Boolean!, seo_slug: String!, projection_id: Int!, description: String, coordx: Float, coordy: Float, zoom: Int, id: ID): Map
-        addMapImage (file: Upload!): File!
     }
     type Map {
         id: ID!
@@ -95,18 +90,11 @@ const typeDefs = `
         maxX: Float
         maxY: Float
     }
-    type File {
-        id: ID!
-        path: String!
-        filename: String!
-        mimetype: String!
-        encoding: String!
-    }
 `
 
 const schema = makeExecutableSchema({
     typeDefs,
-    resolvers,
+    resolvers: resolvers.PublicResolvers,
 });
 
 module.exports = schema

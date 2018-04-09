@@ -1,24 +1,35 @@
 'use strict'
 
 const User = use('App/Models/User')
+const Hash = use('Hash')
 
 class UserController {
 
-    async login ({ request, auth, response, session }) {
+    async login ({ request, auth, response }) {
         try {
-          await auth.check()
-          var profile = await auth.getUser()
-          if (!profile.active) throw new Error('Account is disabled.')
-          session.put('logged', profile.id)
-          response.send({success: true, profile: profile})
+          const secret = request.all()
+          console.log('secret', secret)
+          const email = secret.email
+          const user = await User.query().where('email', email).first()
+          if (!user) throw new Error('Invalid email')
+          if (!user.active) throw new Error('Account is disabled.')
+          const token = await auth
+            .withRefreshToken()
+            .attempt(secret.email, secret.password)
+          /*
+          const pwdCheck = await Hash.verify(secret.password, user.password)
+          if (!pwdCheck) throw new Error('Invalid password')
+          const token = auth.generate(user)
+          */
+          response.send({success: true, profile: user, jwt: token})
         } catch (error) {
           response.send({success: false, error: error.message})
         }
     };
 
-    async show ({ params, response, session }) {
+    async show ({ auth, params, response }) {
         try {
-          var user = await User.find(session.get('logged'))
+          var user = await auth.getUser()
           response.send({success: true, user: user});
         } catch (error) {
           response.send({success: false, error: error.message})

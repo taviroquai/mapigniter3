@@ -43,11 +43,9 @@ class List extends Component {
                                     { item.id }
                                 </Table.Cell>
                                 <Table.Cell>
-                                    { this.props.onOpen ? (
-                                        <Link to={'/admin/map/form/'+item.id}>
-                                            { item.title }
-                                        </Link>
-                                    ) : item.title }
+                                    <Link to={'/admin/map/form/'+item.id}>
+                                        { item.title }
+                                    </Link>
                                 </Table.Cell>
                                 <Table.Cell textAlign='right'>
                                     { this.props.onRemove ? (

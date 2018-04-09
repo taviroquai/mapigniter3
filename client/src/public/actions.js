@@ -1,36 +1,12 @@
 import Store from 'react-observable-store';
 import ApolloClient from "apollo-boost";
-import gql from "graphql-tag";
+import * as Queries from './queries';
 
 const reload = () => {
     const client = new ApolloClient({
         uri: Store.get('server.endpoint') + '/api'
     });
-    const query = gql`
-    {
-        maps {
-            id
-            title
-            description
-            image
-            projection {
-                srid
-            }
-            layers {
-                id
-                layer {
-                    id
-                    title
-                    description
-                    type
-                    projection {
-                        id
-                        srid
-                    }
-                }
-            }
-        }
-    }`
+    const query = Queries.getAllMaps
     client.query({ query }).then(r => {
         Store.update('home', {loading: r.loading})
         if ((r.networkStatus === 7) && !r.errors) {

@@ -1,17 +1,87 @@
 import Store from 'react-observable-store';
-import Server from '../../server';
-import ApolloBoost from "apollo-boost";
-import gql from "graphql-tag";
-var uploadFile;
+import Server, { getGraphqlClient } from '../../server';
+import * as Queries from './queries';
+import * as MapLayerQueries from '../maplayers/queries';
+import * as ProjectionQueries from '../projections/queries';
+
+var files = {
+    image: null
+};
 
 const reload = async () => {
-    const url = Store.get('server.endpoint') + '/map';
-    const t = setTimeout(() => { Store.update('map', {loading: true}) }, 1000);
-    const result = await Server.get(url)
-    clearTimeout(t)
-    Store.update('map', {loading: false})
-    if (result && result.success) Store.set('map.items', result.items);
+    const client = getGraphqlClient();
+    const query = Queries.getAllMaps
+    client.query({ query }).then(r => {
+        Store.update('map', {items: r.data.maps, loading: false, error: null});
+    })
+    .catch(error => {
+        Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
+    })
 };
+
+const editItem = async (id = false) => {
+    loadProjectionOptions();
+    if (!id) return editNewItem();
+    files.image = null;
+    const client = getGraphqlClient();
+    const query = Queries.getMapById
+    client.query({ query, variables: { id } }).then(r => {
+        Store.update('map', {form: r.data.map, loading: false, error: null});
+    })
+    .catch(error => {
+        Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
+    })
+};
+
+const submit = async () => {
+    var query, item = Store.get('map.form');
+    const client = getGraphqlClient();
+    if (item.id) query = Queries.updateMap
+    else query = Queries.addMap
+    client.mutate({ mutation: query, variables: item }).then(async (r) => {
+        item = Object.assign(item, item.id ? r.data.updateMap : r.data.addMap);
+        Store.update('map', {form: item});
+        if (files.image) await uploadMapImage(item, files.image)
+    })
+    .catch(error => {
+        Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
+    })
+}
+
+const removeItem = async (item) => {
+    const client = getGraphqlClient();
+    const query = Queries.removeMap
+    client.mutate({ mutation: query, variables: {id: item.id} }).then(async (r) => {
+        Store.update('map', {loading: false})
+        await reload()
+    })
+    .catch(error => {
+        Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
+    })
+}
+
+const removeLayer = async (item) => {
+    const client = getGraphqlClient();
+    const query = MapLayerQueries.removeMapLayer
+    client.mutate({ mutation: query, variables: {id: item.id} }).then(async (r) => {
+        Store.update('map', {loading: false})
+        await editItem(item.map_id)
+    })
+    .catch(error => {
+        Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
+    })
+}
+
+const loadProjectionOptions = async () => {
+    const client = getGraphqlClient();
+    const query = ProjectionQueries.getAllProjections;
+    client.query({ query }).then(r => {
+        Store.update('map', {projections: r.data.projections, loading: false})
+    })
+    .catch(error => {
+        Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
+    })
+}
 
 const editNewItem = () => {
     const item = {
@@ -21,27 +91,30 @@ const editNewItem = () => {
         projection_id: '1',
         coordx: 0,
         coordy: 0,
-        zoom: 1,
+        zoom: 0,
         publish: true,
         image: '',
         description: '',
         layers: []
     }
-    uploadFile = null
-    setTimeout(() => { Store.update('map', {form: item, error: false}); }, 1);
+    files.image = null
+    setTimeout(() => {
+        Store.update('map', {form: item, error: false});
+    }, 1);
 };
 
-const editItem = async (id = false) => {
-    loadProjectionOptions();
-    if (!id) return editNewItem();
-    uploadFile = null
-    const url = Store.get('server.endpoint') + '/map/' + id;
-    const t = setTimeout(() => { Store.update('map', {loading: true}) }, 1000);
-    const result = await Server.get(url)
-    clearTimeout(t)
-    Store.update('map', {loading: false, error: false})
-    if (result && result.success) Store.set('map.form', result.item);
-};
+const uploadMapImage = async (map, file) => {
+    const url = Store.get('server.endpoint') + '/map';
+    Store.update('map', {loading: true, error: false});
+    const formData = new FormData();
+    formData.append('image', file);
+    const result = await Server.post(url+'/'+map.id+'/image', formData, true);
+    if (result && result.success) {
+        Store.update('map', {loading: false, form: {...map, image: result.image}})
+    } else {
+        Store.update('map', {loading: false, error: result.error})
+    }
+}
 
 const setSort = (column) => {
     const sortc = Store.get('map.sortc');
@@ -53,80 +126,6 @@ const setSort = (column) => {
     });
 }
 
-const setUploadFile = (file) => {
-    uploadFile = file;
-}
-
-const submitImage = async (map) => {
-    const url = Store.get('server.endpoint') + '/map';
-    Store.update('map', {loading: true, error: false});
-    const formData = new FormData();
-    formData.append('image', uploadFile.image);
-    const result = await Server.post(url+'/'+map.id+'/image', formData, true);
-    if (result && result.success) {
-        map.image = result.image
-        Store.update('map', {loading: false, form: map})
-    } else {
-        Store.update('map', {loading: false, error: result.error})
-    }
-}
-
-const submit = async () => {
-    const client = new ApolloBoost({
-        uri: Store.get('server.endpoint') + '/api'
-    });
-    const query = gql`
-    mutation addMap($title: String!, $seo_slug: String!, $projection_id: Int!, $publish: Boolean!, $id: ID) {
-        addMap(title: $title, seo_slug: $seo_slug, projection_id: $projection_id, publish: $publish, id: $id) {
-            id
-            title
-            seo_slug
-            projection_id
-            coordx
-            coordy
-            publish
-            description
-            zoom
-        }
-    }`
-    const item = Store.get('map.form');
-    client.mutate({ mutation: query, variables: item }).then(async (r) => {
-        Store.update('map', {loading: r.loading})
-        if ((r.data) && !r.errors) {
-            Store.update('map', {form: Object.assign(item, r.data.addMap)});
-            console.log('map', Store.get('map.form'))
-            if (uploadFile) await submitImage(r.data.addMap)
-        } else {
-            Store.update('map', {loading: false, error: r.errors})
-        }
-    });
-}
-
-const removeItem = async (item) => {
-    const t = setTimeout(() => { Store.update('map', {loading: true}) }, 1000);
-    const url = Store.get('server.endpoint') + '/map/'+item.id
-    const result = await Server.remove(url)
-    clearTimeout(t)
-    Store.update('map', {loading: false})
-    if (result && result.success) await reload()
-}
-
-const removeLayer = async (item) => {
-    const map_id = item.map_id
-    const t = setTimeout(() => { Store.update('map', {loading: true}) }, 1000);
-    const url = Store.get('server.endpoint') + '/maplayer/'+item.id
-    const result = await Server.remove(url)
-    clearTimeout(t)
-    Store.update('map', {loading: false})
-    if (result && result.success) await editItem(map_id)
-}
-
-const loadProjectionOptions = async () => {
-    const url = Store.get('server.endpoint') + '/projection';
-    const result = await Server.get(url)
-    Store.update('map', {projections: result.items})
-}
-
 export default {
     reload,
     editNewItem,
@@ -135,5 +134,5 @@ export default {
     removeItem,
     setSort,
     removeLayer,
-    setUploadFile
+    files: files
 }

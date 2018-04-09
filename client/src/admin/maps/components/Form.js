@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Form, Message, Button, Segment, Grid, Dropdown } from 'semantic-ui-react';
-import Layers from '../../maplayers/components/List';
+import MapLayersList from './MapLayersList';
 import ImageUpload from '../../components/ImageUpload';
 import Wysiwyg from '../../components/Wysiwyg';
 import Map from './Map';
-
 
 class ItemForm extends Component {
 
@@ -103,7 +102,7 @@ class ItemForm extends Component {
                                 <Form.Field required>
                                     <label>Center X</label>
                                     <Form.Input name="coordx" placeholder='Center X'
-                                        value={form.coordx || ''}
+                                        value={typeof form.coordx === 'undefined' ? '' : form.coordx}
                                         onChange={onInputChange}
                                     />
                                 </Form.Field>
@@ -112,7 +111,7 @@ class ItemForm extends Component {
                                 <Form.Field required>
                                     <label>Center Y</label>
                                     <Form.Input name="coordy" placeholder='Center Y'
-                                        value={form.coordy || ''}
+                                        value={typeof form.coordy === 'undefined' ? '' : form.coordy}
                                         onChange={onInputChange}
                                     />
                                 </Form.Field>
@@ -121,7 +120,7 @@ class ItemForm extends Component {
                                 <Form.Field required>
                                     <label>Default Zoom</label>
                                     <Form.Input name="zoom" placeholder='Default Zoom'
-                                        value={form.zoom || ''}
+                                        value={typeof form.zoom === 'undefined' ? '' : form.zoom}
                                         onChange={onInputChange}
                                     />
                                 </Form.Field>
@@ -140,7 +139,7 @@ class ItemForm extends Component {
                                     <ImageUpload name="image"
                                         src={form.image && form.id ? serverUrl+'/'+form.id+'/'+form.image : ''}
                                         onSelectFile={onSelectFile}
-                                        onClear={e => onInputChange(e, {name: 'image', value: ''})}
+                                        onClear={e => onSelectFile(e, {name: 'image', value: null})}
                                     />
                                 </Form.Field>
                             </Grid.Column>
@@ -152,10 +151,10 @@ class ItemForm extends Component {
                             <Grid>
                                 <Grid.Column mobile={16} tablet={8} computer={8}>
                                     <h4>Preview</h4>
-                                    { form.id ? <Map {...form} height="400px" /> : null }
+                                    <Map {...form} height="400px" />
                                 </Grid.Column>
                                 <Grid.Column mobile={16} tablet={8} computer={8}>
-                                    <Layers { ...this.props } />
+                                    <MapLayersList map={this.props.form} onRemove={this.props.onRemove} />
                                 </Grid.Column>
                             </Grid>
                         </div>

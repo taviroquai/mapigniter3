@@ -29,7 +29,7 @@ class ItemForm extends Component {
                         { onCreate ? (
                             <Button onClick={onCreate}>New</Button>
                         ) : null }
-                        <Link to="/admin/map" className="ui button right aligned">
+                        <Link to={"/admin/map/form/"+form.map_id} className="ui button right aligned">
                             Cancel
                         </Link>
                     </Segment>
@@ -49,7 +49,7 @@ class ItemForm extends Component {
                                     <Dropdown placeholder='Layer' fluid search selection
                                         name="layer_id"
                                         options={layers}
-                                        value={form.layer_id || ''}
+                                        value={''+form.layer_id || ''}
                                         onChange={onDropdownChange}
                                     />
                                 </Form.Field>
@@ -78,7 +78,7 @@ class ItemForm extends Component {
                                     <Dropdown placeholder='Layer Group' fluid search selection
                                         name="parent_id"
                                         options={groups}
-                                        value={form.parent_id || ''}
+                                        value={''+form.parent_id || ''}
                                         onChange={onDropdownChange}
                                     />
                                 </Form.Field>
@@ -91,7 +91,7 @@ class ItemForm extends Component {
                                         disabled={!!form.map_id}
                                         name="map_id"
                                         options={maps}
-                                        value={form.map_id || ''}
+                                        value={''+form.map_id || ''}
                                         onChange={onDropdownChange}
                                     />
                                 </Form.Field>

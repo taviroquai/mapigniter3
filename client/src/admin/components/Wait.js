@@ -5,7 +5,7 @@ class Wait extends Component {
     render() {
         return (
             <div className="ui main text container" style={{height: '440px'}}>
-                <h1 className="ui header">TodoMVC</h1>
+                <h1 className="ui header">Loading...</h1>
 
                 <Dimmer active inverted>
                     <Loader />

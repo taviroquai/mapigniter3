@@ -29,13 +29,14 @@ class Form extends Component {
 
     onSelectImage(e, {name, value, type}) {
         Store.set('layer.form.'+name, value.name);
-        Actions.setUploadImage({ image: value });
+        Actions.files.image = value;
     }
 
     onSelectFile(e, {name, value, type}) {
         console.log('select file', type)
         Store.set('layer.form.'+name, value.name);
-        Actions.setUploadFile({ file: value, field: name });
+        Actions.files.dataFile = value;
+        Actions.files.field = name;
     }
 
     onSubmit(e) {

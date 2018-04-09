@@ -95,7 +95,7 @@ class FormTabBasic extends Component {
                             <Dropdown placeholder='Projection' fluid search selection
                                 name="projection_id"
                                 options={projections}
-                                value={parseInt(form.projection_id, 10) || ''}
+                                value={''+form.projection_id || ''}
                                 onChange={onDropdownChange}
                             />
                         </Form.Field>

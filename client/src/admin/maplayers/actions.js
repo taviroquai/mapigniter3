@@ -1,16 +1,13 @@
 import Store from 'react-observable-store';
-import Server from '../../server';
-
-const reload = async () => {
-    const url = Store.get('server.endpoint') + '/maplayer';
-    const t = setTimeout(() => { Store.update('map', {loading: true}) }, 1000);
-    const result = await Server.get(url)
-    clearTimeout(t)
-    Store.update('maplayer', {loading: false})
-    if (result && result.success) Store.set('maplayer.items', result.items);
-};
+import { getGraphqlClient } from '../../server';
+import * as Queries from './queries';
+import * as MapQueries from '../maps/queries';
+import * as LayerQueries from '../layers/queries';
 
 const editNewItem = (map_id) => {
+    loadMapOptions();
+    loadLayerOptions();
+    loadGroupOptions(map_id);
     const item = {
         id: null,
         map_id: parseInt(map_id, 10),
@@ -20,75 +17,58 @@ const editNewItem = (map_id) => {
         display_order: 1,
         baselayer: false
     }
-    setTimeout(() => { Store.update('maplayer', {form: item, error: false}); }, 1);
+    setTimeout(() => {
+        Store.update('maplayer', {form: item, error: false});
+    }, 1);
 };
 
-const editItem = async (map_id, id = false) => {
-    loadMapOptions();
-    loadLayerOptions();
-    loadGroupOptions(map_id);
-    if (!id) return editNewItem(map_id);
-    const url = Store.get('server.endpoint') + '/maplayer/' + map_id + '/' + id;
-    const t = setTimeout(() => { Store.update('maplayer', {loading: true}) }, 1000);
-    const result = await Server.get(url)
-    clearTimeout(t)
-    Store.update('maplayer', {loading: false, error: false})
-    if (result && result.success) Store.set('maplayer.form', result.item);
-};
-
-const setSort = (column) => {
-    const sortc = Store.get('map.sortc');
-    const sortd = Store.get('map.sortd');
-    Store.update('maplayer', {
-        sortc: column,
-        sortd: sortc === column && sortd === 'ascending' ? 'descending'
-            : 'ascending'
+const submit = async () => {
+    var item = Store.get('maplayer.form');
+    const client = getGraphqlClient();
+    const query = Queries.addMapLayer;
+    client.mutate({ mutation: query, variables: item }).then(async (r) => {
+        item = Object.assign(item, r.data.addMapLayer);
+        Store.update('maplayer', {form: item});
+    })
+    .catch(error => {
+        Store.update('maplayer', {error: error.graphQLErrors[0].message, loading: false})
     });
 }
 
-const submit = async () => {
-    const t = setTimeout(() => { Store.update('map', {loading: true}) }, 1000);
-    const item = Store.get('maplayer.form');
-    const url = Store.get('server.endpoint') + '/maplayer';
-    const result = await Server.post(url, item)
-    clearTimeout(t)
-    Store.update('maplayer', {loading: false, error: false})
-    if (result && result.success) Store.set('maplayer.form', result.item)
-    else Store.set('maplayer.error', result.error)
-}
-
-const removeItem = async (item) => {
-    const t = setTimeout(() => { Store.update('maplayer', {loading: true}) }, 1000);
-    const url = Store.get('server.endpoint') + '/maplayer/'+item.id
-    const result = await Server.remove(url)
-    clearTimeout(t)
-    Store.update('maplayer', {loading: false})
-    if (result && result.success) await reload()
-}
-
 const loadMapOptions = async () => {
-    const url = Store.get('server.endpoint') + '/map';
-    const result = await Server.get(url)
-    Store.update('maplayer', {maps: result.items})
+    const client = getGraphqlClient();
+    const query = MapQueries.getAllMaps;
+    client.query({ query }).then(r => {
+        Store.update('maplayer', {maps: r.data.maps});
+    })
+    .catch(error => {
+        Store.update('maplayer', {error: error.graphQLErrors[0].message})
+    });
 }
 
 const loadLayerOptions = async () => {
-    const url = Store.get('server.endpoint') + '/layer';
-    const result = await Server.get(url)
-    Store.update('maplayer', {layers: result.items})
+    const client = getGraphqlClient();
+    const query = LayerQueries.getAllLayers;
+    client.query({ query }).then(r => {
+        Store.update('maplayer', {layers: r.data.layers});
+    })
+    .catch(error => {
+        Store.update('maplayer', {error: error.graphQLErrors[0].message})
+    });
 }
 
 const loadGroupOptions = async (map_id) => {
-    const url = Store.get('server.endpoint') + '/maplayer/' + map_id;
-    const result = await Server.get(url)
-    Store.update('maplayer', {groups: result.items})
+    const client = getGraphqlClient();
+    const query = Queries.getMapLayersByMapId;
+    client.query({ query, variables: {map_id} }).then(r => {
+        Store.update('maplayer', {groups: r.data.mapLayers});
+    })
+    .catch(error => {
+        Store.update('maplayer', {error: error.graphQLErrors[0].message})
+    });
 }
 
 export default {
-    reload,
     editNewItem,
-    editItem,
-    submit,
-    removeItem,
-    setSort
+    submit
 }

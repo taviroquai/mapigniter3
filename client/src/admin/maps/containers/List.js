@@ -7,20 +7,16 @@ import helpers from '../../../helpers.js';
 
 class List extends Component {
 
-    componentDidMount() {
-        Actions.reload();
+    async componentDidMount() {
+        await Actions.reload();
     }
 
     handleSort(column) {
         Actions.setSort(column);
     }
 
-    editItem(item) {
-        Actions.editItem(item);
-    }
-
-    removeItem(item) {
-        Actions.removeItem(item);
+    async removeItem(item) {
+        await Actions.removeItem(item);
     }
 
     setFilter(e, input) {
@@ -35,16 +31,16 @@ class List extends Component {
     }
 
     render() {
-        if (this.props.loading) return <Wait />
+        const { loading, filter, sortc, sortd } = this.props
+        if (loading) return <Wait />
         var items = this.props.items || []
-        items = this.applyFilter(items, this.props.filter);
-        items = helpers.applySort(items, this.props.sortc, this.props.sortd);
+        items = this.applyFilter(items, filter);
+        items = helpers.applySort(items, sortc, sortd);
         return (
             <ListComponent
                 items={items}
-                sortc={this.props.sortc}
-                sortd={this.props.sortd}
-                onOpen={this.editItem.bind(this)}
+                sortc={sortc}
+                sortd={sortd}
                 onSearch={this.setFilter.bind(this)}
                 onRemove={this.removeItem.bind(this)}
                 onSort={this.handleSort.bind(this)}

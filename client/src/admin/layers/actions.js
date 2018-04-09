@@ -1,17 +1,26 @@
 import Store from 'react-observable-store';
-import Server from '../../server';
+import Server, { getGraphqlClient } from '../../server';
+import * as Queries from './queries';
+import * as LayerTypeQueries from '../layertypes/queries';
+import * as ProjectionQueries from '../projections/queries';
 import OlWMSCapabilities from 'ol/format/wmscapabilities';
 import xml2js from 'xml2js';
-var uploadFile;
-var uploadImage;
+
+const files = {
+    image: null,
+    dataFile: null,
+    field: null
+};
 
 const reload = async () => {
-    const url = Store.get('server.endpoint') + '/layer';
-    const t = setTimeout(() => { Store.update('layer', {loading: true}) }, 1000);
-    const result = await Server.get(url)
-    clearTimeout(t)
-    Store.update('layer', {loading: false})
-    if (result && result.success) Store.set('layer.items', result.items);
+    const client = getGraphqlClient();
+    const query = Queries.getAllLayers
+    client.query({ query }).then(r => {
+        Store.update('layer', {items: r.data.layers, loading: false, error: null});
+    })
+    .catch(error => {
+        Store.update('layer', {error: error.graphQLErrors[0].message, loading: false})
+    })
 };
 
 const editNewItem = () => {
@@ -57,98 +66,77 @@ const editNewItem = () => {
         wfs_version: '1.0.0',
         wfs_typename: ''
     }
-    setUploadFile(false);
-    setTimeout(() => { Store.update('layer', {form: item, error: false}); }, 1);
+    files.image = null;
+    files.dataFile = null;
+    setTimeout(() => {
+        Store.update('layer', {form: item, error: false});
+    }, 1);
 };
 
 const editItem = async (id = false) => {
     loadTypeOptions();
     loadProjectionOptions();
     if (!id) return editNewItem();
-    const url = Store.get('server.endpoint') + '/layer/' + id;
-    const t = setTimeout(() => { Store.update('layer', {loading: true}) }, 1000);
-    const result = await Server.get(url)
-    clearTimeout(t)
-    Store.update('layer', {loading: false, error: false})
-    if (result && result.success) Store.set('layer.form', result.item);
+    files.image = null;
+    files.dataFile = null;
+
+    const client = getGraphqlClient();
+    const query = Queries.getLayerById;
+    client.query({ query, variables: { id } }).then(r => {
+        Store.update('layer', {form: r.data.layer, loading: false, error: null});
+    })
+    .catch(error => {
+        Store.update('layer', {error: error.graphQLErrors[0].message, loading: false})
+    })
 };
 
-const setSort = (column) => {
-    const sortc = Store.get('layer.sortc');
-    const sortd = Store.get('layer.sortd');
-    Store.update('layer', {
-        sortc: column,
-        sortd: sortc === column && sortd === 'ascending' ? 'descending'
-            : 'ascending'
-    });
-}
-
-const setUploadFile = (file) => {
-    uploadFile = file;
-}
-
-const setUploadImage = (file) => {
-    uploadImage = file;
-}
-
-const execSubmitFile = async (url, formData) => {
-    Store.update('layer', {loading: true, error: false});
-    const resultUpload = await Server.post(url, formData, true);
-    if (resultUpload && resultUpload.success) {
-        Store.update('layer', {loading: false, form: resultUpload.item})
-    } else {
-        Store.update('layer', {loading: false, error: resultUpload.error})
-    }
-}
-
-const submitImage = async (layer) => {
-    const url = Store.get('server.endpoint') + '/layer/'+layer.id+'/image';
-    const formData = new FormData();
-    formData.append('image', uploadImage.image);
-    await execSubmitFile(url, formData)
-}
-
-const submitFile = async (layer) => {
-    const url = Store.get('server.endpoint') + '/layer/'+layer.id+'/file';
-    const formData = new FormData();
-    formData.append('file', uploadFile.file);
-    formData.append('field', uploadFile.field);
-    await execSubmitFile(url, formData)
-}
-
 const submit = async () => {
-    Store.update('layer', { loading: true, error: false })
-    const item = Store.get('layer.form');
-    const url = Store.get('server.endpoint') + '/layer';
-    const result = await Server.post(url, item);
-    if (result && result.success) {
-        Store.update('layer', {loading: false, form: result.item})
-        if (uploadImage) await submitImage(result.item)
-        if (uploadFile) await submitFile(result.item)
-    } else {
-        Store.update('layer', {loading: false, error: result.error})
-    }
+    var query, item = Store.get('layer.form');
+    const client = getGraphqlClient();
+    if (item.id) query = Queries.updateLayer
+    else query = Queries.addLayer
+    client.mutate({ mutation: query, variables: item }).then(async (r) => {
+        item = Object.assign(item, item.id ? r.data.updateLayer : r.data.addLayer);
+        Store.update('layer', {form: item});
+        if (files.image) await submitFile(item.id, files.image, 'image')
+        if (files.dataFile) await submitFile(item.id, files.dataFile, files.field)
+    })
+    .catch(error => {
+        Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
+    })
 }
 
 const removeItem = async (item) => {
-    const t = setTimeout(() => { Store.update('layer', {loading: true}) }, 1000);
-    const url = Store.get('server.endpoint') + '/layer/'+item.id
-    const result = await Server.remove(url)
-    clearTimeout(t)
-    Store.update('layer', {loading: false})
-    if (result && result.success) await reload()
+    const client = getGraphqlClient();
+    client.mutate({ mutation: Queries.removeLayer, variables: {id: item.id} }).then(async (r) => {
+        Store.update('layer', {loading: false})
+        await reload()
+    })
+    .catch(error => {
+        Store.update('layer', {error: error.graphQLErrors[0].message, loading: false})
+    })
 }
 
 const loadTypeOptions = async () => {
-    const url = Store.get('server.endpoint') + '/layertype';
-    const result = await Server.get(url)
-    Store.update('layer', {types: result.items})
+    const client = getGraphqlClient();
+    const query = LayerTypeQueries.getAllLayerTypes
+    client.query({ query }).then(r => {
+        Store.update('layer', {types: r.data.layerTypes});
+    })
+    .catch(error => {
+        Store.update('layer', {error: error.graphQLErrors[0].message})
+    });
 }
 
 const loadProjectionOptions = async () => {
-    const url = Store.get('server.endpoint') + '/projection';
-    const result = await Server.get(url)
-    Store.update('layer', {projections: result.items})
+    const client = getGraphqlClient();
+    const query = ProjectionQueries.getAllProjections
+    client.query({ query }).then(r => {
+        Store.update('layer', {projections: r.data.projections});
+    })
+    .catch(error => {
+        Store.update('layer', {error: error.graphQLErrors[0].message})
+    });
 }
 
 const postgisConnect = async () => {
@@ -178,9 +166,9 @@ const getWMSCapabilities = async () => {
         if (result) {
             Store.update('layer', {loading: false, error: false})
             const reader = new OlWMSCapabilities();
-            const parsedCapabilities = reader.read(result);
-            if (parsedCapabilities.Capability.Layer.Layer) {
-                var options = parsedCapabilities.Capability.Layer.Layer.map(l => {
+            const parsedResult = reader.read(result);
+            if (parsedResult && parsedResult.Capability.Layer.Layer) {
+                var options = parsedResult.Capability.Layer.Layer.map(l => {
                     return {key: l.Name, value: l.Name, text: l.Title, crs: l.CRS}
                 });
                 Store.update('layer', {wms_options: options});
@@ -210,7 +198,12 @@ const getWFSCapabilities = async () => {
             parseString(result, function (err, p) {
                 if (!err && p.WFS_Capabilities.FeatureTypeList) {
                     var options = p.WFS_Capabilities.FeatureTypeList[0].FeatureType.map(l => {
-                        return {key: l.Name[0], value: l.Name[0], text: l.Title[0], crs: l.SRS.join(',')}
+                        return {
+                            key: l.Name[0],
+                            value: l.Name[0],
+                            text: l.Title[0],
+                            crs: l.SRS.join(',')
+                        }
                     });
                     Store.update('layer', {wfs_options: options});
                 }
@@ -222,6 +215,30 @@ const getWFSCapabilities = async () => {
     });
 }
 
+const submitFile = async (layer_id, file, field) => {
+    const url = Store.get('server.endpoint') + '/layer/'+layer_id+'/upload/'+field;
+    const formData = new FormData();
+    formData.append('file', file);
+    Store.update('layer', {loading: true, error: false});
+    const result = await Server.post(url, formData, true);
+    const layer = Store.get('layer.form');
+    if (result && result.success) {
+        Store.update('layer', {loading: false, form: {...layer, [field]: result.filename}})
+    } else {
+        Store.update('layer', {loading: false, error: result.error})
+    }
+}
+
+const setSort = (column) => {
+    const sortc = Store.get('layer.sortc');
+    const sortd = Store.get('layer.sortd');
+    Store.update('layer', {
+        sortc: column,
+        sortd: sortc === column && sortd === 'ascending' ? 'descending'
+            : 'ascending'
+    });
+}
+
 export default {
     reload,
     editNewItem,
@@ -229,10 +246,9 @@ export default {
     submit,
     removeItem,
     setSort,
-    setUploadImage,
+    files: files,
     loadTypeOptions,
     loadProjectionOptions,
-    setUploadFile,
     postgisConnect,
     getWMSCapabilities,
     getWFSCapabilities

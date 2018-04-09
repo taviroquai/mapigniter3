@@ -1,21 +1,18 @@
 import Store from 'react-observable-store';
+import { getGraphqlClient } from '../server';
+import * as Queries from './queries';
 
-export const DashboardLoad = () => {
-    Store.update('dashboard', {loading: true });
-    var endpoint = Store.get('server.endpoint');
-    fetch(endpoint + '/dashboard', {
-        headers: {
-            'Accept': 'application/json, */*',
-            'Content-Type': 'application/json'
-        }
+const DashboardLoad = async () => {
+    const client = getGraphqlClient();
+    const query = Queries.getStats;
+    client.query({ query }).then(r => {
+        Store.update('dashboard', {data1: r.data.getStats.stats1, loading: false, error: null});
     })
-    .then(res => res.json())
-    .then((data) => {
-        if (data.success) {
-            Store.update('dashboard', {
-                data1: data.data1,
-                loading: false
-            });
-        }
-    });
+    .catch(error => {
+        Store.update('dashboard', {error: error.graphQLErrors[0].message, loading: false})
+    })
 };
+
+export default {
+    DashboardLoad
+}

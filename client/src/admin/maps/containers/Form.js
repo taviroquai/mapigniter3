@@ -28,22 +28,12 @@ class Form extends Component {
     }
 
     onSelectFile(e, {name, value, type}) {
-        Store.set('map.form.'+name, value.name);
-        Actions.setUploadFile({ image: value });
-    }
-
-    onSelectImage(e, {name, value, type}) {
-        Store.set('map.form.'+name, value.name);
-        Actions.setUploadImage({
-            upload: value,
-            upload_type: type,
-            upload_field: name
-        });
+        Store.set('map.form.'+name, value ? value.name : '');
+        Actions.files.image = value;
     }
 
     onSubmit(e) {
         e.preventDefault();
-        console.log('submit')
         Actions.submit();
     }
 
@@ -65,7 +55,6 @@ class Form extends Component {
                 serverUrl={serverUrl}
                 onInputChange={this.onInputChange.bind(this)}
                 onDropdownChange={this.onDropdownChange.bind(this)}
-                onSelectImage={this.onSelectImage.bind(this)}
                 onSelectFile={this.onSelectFile.bind(this)}
                 onSubmit={this.onSubmit.bind(this)}
                 onCreate={this.onCreate.bind(this)}

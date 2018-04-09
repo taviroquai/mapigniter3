@@ -5,15 +5,14 @@ import { I18n } from 'react-i18next';
 class Profile extends Component {
 
     render() {
-
-        // Render form
+        const { user, submit, error, errors, handleFormInput } = this.props
         return (
             <I18n ns="translations">
                 { (t, { i18n }) => (
                     <div className="ui main container">
                         <h1 className="ui header">{t('My Profile')}</h1>
 
-                        <Form error={this.props.error} onSubmit={this.props.submit}>
+                        <Form error={error} onSubmit={submit}>
 
                             <div className="ui grid">
                                 <div className="sixteen wide column">
@@ -26,9 +25,9 @@ class Profile extends Component {
                                     <Form.Field required>
                                         <label>{t('Email')}</label>
                                         <Form.Input name="email" placeholder={t('Email')}
-                                            error={this.props.errors && this.props.errors.email}
-                                            value={this.props.user.email || ''}
-                                            onChange={this.props.handleFormInput}
+                                            error={errors && errors.email}
+                                            value={user.email || ''}
+                                            onChange={handleFormInput}
                                         />
                                     </Form.Field>
                                 </div>
@@ -36,9 +35,9 @@ class Profile extends Component {
                                     <Form.Field required>
                                         <label>{t('Username')}</label>
                                         <Form.Input name="username" placeholder={t('Username')}
-                                            error={this.props.errors && this.props.errors.username}
-                                            value={this.props.user.username || ''}
-                                            onChange={this.props.handleFormInput}
+                                            error={errors && errors.username}
+                                            value={user.username || ''}
+                                            onChange={handleFormInput}
                                         />
                                     </Form.Field>
                                 </div>
@@ -51,9 +50,9 @@ class Profile extends Component {
                                         <label>{t('Password')}</label>
                                         <Form.Input name="password" placeholder={t('Password')}
                                             type="password"
-                                            error={this.props.errors && this.props.errors.password}
-                                            value={this.props.user.password || '' }
-                                            onChange={this.props.handleFormInput}
+                                            error={errors && errors.password}
+                                            value={user.password || '' }
+                                            onChange={handleFormInput}
                                         />
                                     </Form.Field>
                                 </div>
@@ -63,13 +62,13 @@ class Profile extends Component {
                                         <label>{t('Password confirmation')}</label>
                                         <Form.Input name="password_confirmation" placeholder={t('Password confirmation')}
                                             type="password"
-                                            value={this.props.user.password_confirmation || '' }
-                                            onChange={this.props.handleFormInput}
+                                            value={user.password_confirmation || '' }
+                                            onChange={handleFormInput}
                                         />
                                     </Form.Field>
                                 </div>
 
-                                { this.props.errors && this.props.errors.password ? (
+                                { errors && errors.password ? (
                                     <div className="eight wide column">
                                         <Message
                                             error

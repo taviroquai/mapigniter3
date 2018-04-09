@@ -1,28 +1,64 @@
 import Store from 'react-observable-store';
-import Server from '../../server';
+import { getGraphqlClient } from '../../server';
+import * as Queries from './queries';
 
 const reload = async () => {
-    const url = Store.get('server.endpoint') + '/layertype';
-    const t = setTimeout(() => { Store.update('layertype', {loading: true}) }, 1000);
-    const result = await Server.get(url)
-    clearTimeout(t)
-    Store.update('layertype', {loading: false})
-    if (result && result.success) Store.set('layertype.items', result.items);
-};
-
-const editNewItem = () => {
-    const item = { id: null, label: '', key: '' }
-    setTimeout(() => { Store.update('layertype', {form: item, error: false}) }, 1);
+    const client = getGraphqlClient();
+    const query = Queries.getAllLayerTypes;
+    client.query({ query }).then(r => {
+        Store.update('layertype', {items: r.data.layerTypes, error: null});
+    })
+    .catch(error => {
+        Store.update('layertype', {error: error.graphQLErrors[0].message, loading: false})
+    })
 };
 
 const editItem = async (id = false) => {
     if (!id) return editNewItem();
-    const url = Store.get('server.endpoint') + '/layertype/' + id;
-    const t = setTimeout(() => { Store.update('layertype', {loading: true}) }, 1000);
-    const result = await Server.get(url);
-    clearTimeout(t);
-    if (result && result.success) Store.update('layertype', { loading: false, form: result.item });
-    else Store.update('layertype', {loading: false, error: false})
+    const client = getGraphqlClient();
+    const query = Queries.getLayerTypeById;
+    client.query({ query, variables: { id } }).then(r => {
+        Store.update('layertype', {form: r.data.layerType, loading: false, error: null});
+    })
+    .catch(error => {
+        Store.update('layertype', {error: error.graphQLErrors[0].message, loading: false})
+    })
+};
+
+const submit = async () => {
+    var query, item = Store.get('layertype.form');
+    const client = getGraphqlClient();
+    if (item.id) query = Queries.updateLayerType
+    else query = Queries.addLayerType
+    client.mutate({ mutation: query, variables: item }).then(async (r) => {
+        Store.update('layertype', {form: item, loading: false, error: null});
+    })
+    .catch(error => {
+        Store.update('layertype', {error: error.graphQLErrors[0].message, loading: false})
+    });
+}
+
+const removeItem = async (item) => {
+    const client = getGraphqlClient();
+    const query = Queries.removeLayerType
+    client.mutate({ mutation: query, variables: {id: item.id} }).then(async (r) => {
+        Store.update('layertype', {loading: false, error: null})
+        await reload()
+    })
+    .catch(error => {
+        Store.update('layertype', {error: error.graphQLErrors[0].message, loading: false})
+    })
+}
+
+const editNewItem = () => {
+    const item = {
+        id: '',
+        label: '',
+        key: ''
+    }
+    setTimeout(() => {
+        Store.update('layertype', {form: item, error: false})
+    }, 1);
 };
 
 const setSort = (column) => {
@@ -33,26 +69,6 @@ const setSort = (column) => {
         sortd: sortc === column && sortd === 'ascending' ? 'descending'
             : 'ascending'
     });
-}
-
-const submit = async () => {
-    const t = setTimeout(() => { Store.update('layertype', {loading: true}) }, 1000);
-    const item = Store.get('layertype.form');
-    const url = Store.get('server.endpoint') + '/layertype';
-    const result = await Server.post(url, item)
-    clearTimeout(t)
-    Store.update('layertype', {loading: false, error: false})
-    if (result && result.success) Store.set('layertype.form', result.item)
-    else Store.set('layertype.error', result.error)
-}
-
-const removeItem = async (item) => {
-    const t = setTimeout(() => { Store.update('layertype', {loading: true}) }, 1000);
-    const url = Store.get('server.endpoint') + '/layertype/'+item.id
-    const result = await Server.remove(url)
-    clearTimeout(t)
-    Store.update('layertype', {loading: false})
-    if (result && result.success) await reload()
 }
 
 export default {

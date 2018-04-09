@@ -16,16 +16,14 @@ class Utils {
         })
     }
 
-    static async processFileUpload(request, field, types, target) {
-        const file = request.file(field, { types, size: '4mb' })
+    static async processFileUpload(request, types, target) {
+        const file = request.file('file', { types, size: '4mb' })
         if (!file) return false
         const ext = await this.getFileExtension(file.tmpPath)
         if (!ext) return false
         const filename = uuidV4()+'.'+ext
         await file.move(target, { name: filename })
         if (!file.moved()) return false
-        return filename
-        if (!filename) return false
         return filename
     }
 }

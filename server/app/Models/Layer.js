@@ -33,6 +33,57 @@ class Layer extends Model {
       return ['postgis_pass']
     }
 
+    static fillable() {
+        return [
+            'title',
+            'seo_slug',
+            'publish',
+            'image',
+            'description',
+            'feature_info_template',
+            'search',
+            'type',
+            'projection_id',
+            'min_resolution',
+            'max_resolution',
+            'bing_key',
+            'bing_imageryset',
+            'mapquest_layer',
+            'gpx_filename',
+            'kml_filename',
+            'geopackage_filename',
+            'geopackage_table',
+            'geopackage_fields',
+            'geojson_geomtype',
+            'geojson_attributes',
+            'geojson_features',
+            'postgis_host',
+            'postgis_port',
+            'postgis_user',
+            'postgis_dbname',
+            'postgis_schema',
+            'postgis_table',
+            'postgis_field',
+            'postgis_attributes',
+            'wms_url',
+            'wms_version',
+            'wms_servertype',
+            'wms_tiled',
+            'wms_layers',
+            'wfs_url',
+            'wfs_version',
+            'wfs_typename'
+        ]
+    }
+
+    static filterInput(input) {
+        const data = {}
+        const fields = Layer.fillable().forEach(f => {
+            if (Object.keys(input).indexOf(f) > -1) data[f] = input[f]
+        })
+        return data
+    }
+
     projection () {
         return this.belongsTo('App/Models/Projection')
     }
@@ -63,7 +114,7 @@ class Layer extends Model {
 
     async processFileUpload(request, field, types) {
         const target = this.getStoragePath()
-        return await Utils.processFileUpload(request, field, types, target)
+        return await Utils.processFileUpload(request, types, target)
     }
 
     async asGeoJSON(db, query) {
@@ -115,13 +166,13 @@ class Layer extends Model {
         });
     }
 
-    async gdalInfo() {
+    static async gdalInfo(layer) {
         return new Promise(resolver => {
-            const path = this.getStoragePath()
+            const path = layer.getStoragePath()
             var datasource = '';
-            switch(this.type) {
+            switch(layer.type) {
                 case 'KML':
-                    datasource = path + '/' + this.kml_filename;
+                    datasource = path + '/' + layer.kml_filename;
                     break;
                 default:
                     return resolver('')
@@ -133,7 +184,7 @@ class Layer extends Model {
                     id: i,
                     name:layer.name,
                     extent: layer.getExtent(),
-                    srs: layer.srs,
+                    srs: layer.srs
                     //geojson:
                 })
             });
@@ -149,18 +200,18 @@ class Layer extends Model {
         })
     }
 
-    async gdalGeoJSON(featureTypeId) {
+    static async gdalGeoJSON(layer, featureTypeId) {
         return new Promise(resolver => {
-            const path = this.getStoragePath()
-            const filename = this.getStoragePath()+'/out.json'
+            const path = layer.getStoragePath()
+            const filename = layer.getStoragePath()+'/out.json'
             if (fs.existsSync(filename)) {
                 const content = fs.readFileSync(filename, 'utf8')
                 return resolver(content)
             }
             var datasource = '';
-            switch(this.type) {
+            switch(layer.type) {
                 case 'KML':
-                    datasource = path + '/' + this.kml_filename;
+                    datasource = path + '/' + layer.kml_filename;
                     break;
                 default:
                     return resolver('')

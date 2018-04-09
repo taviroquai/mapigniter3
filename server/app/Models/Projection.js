@@ -4,6 +4,23 @@ const Model = use('Model')
 const { validate } = use('Validator')
 
 class Projection extends Model {
+
+    static fillable() {
+        return [
+            'srid',
+            'proj4_params',
+            'extent'
+        ]
+    }
+
+    static filterInput(input) {
+        const data = {}
+        const fields = Projection.fillable().forEach(f => {
+            if (Object.keys(input).indexOf(f) > -1) data[f] = input[f]
+        })
+        return data
+    }
+
     layers () {
         return this.hasMany('App/Models/Layer')
     }

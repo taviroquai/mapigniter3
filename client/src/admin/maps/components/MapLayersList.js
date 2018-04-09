@@ -2,16 +2,16 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Grid, Table, Button, Icon, Segment } from 'semantic-ui-react';
 
-class ItemForm extends Component {
+class MapLayersList extends Component {
 
     render() {
-        var { form, onRemove } = this.props
+        var { map, onRemove } = this.props
         return (
             <Grid>
                 <Grid.Column mobile={16} tablet={16} computer={16}>
 
                     <Segment floated="right" basic>
-                        <Link to={'/admin/maplayer/form/' + form.id} className="ui button right aligned">
+                        <Link to={'/admin/maplayer/form/' + map.id} className="ui button right aligned">
                             Add Layer
                         </Link>
                     </Segment>
@@ -32,7 +32,7 @@ class ItemForm extends Component {
                         </Table.Header>
 
                         <Table.Body>
-                            { form.layers.map((item) => (
+                            { map.layers.map((item) => (
                                 <Table.Row key={item.id}>
                                     <Table.Cell>
                                         { item.id }
@@ -58,4 +58,4 @@ class ItemForm extends Component {
     }
 }
 
-export default ItemForm;
+export default MapLayersList;

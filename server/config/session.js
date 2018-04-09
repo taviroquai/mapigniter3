@@ -14,7 +14,7 @@ module.exports = {
   | For `redis` driver, make sure to install and register `@adonisjs/redis`
   |
   */
-  driver: Env.get('SESSION_DRIVER', 'cookie'),
+  driver: Env.get('SESSION_DRIVER', 'file'),
 
   /*
   |--------------------------------------------------------------------------

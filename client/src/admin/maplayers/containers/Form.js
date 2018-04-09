@@ -7,11 +7,8 @@ import Actions from '../actions.js';
 class Form extends Component {
 
     componentWillMount() {
-        const map_id = this.props.match && this.props.match.params.map_id ?
-            this.props.match.params.map_id : false
-        const id = this.props.match && this.props.match.params.id ?
-            this.props.match.params.id : false
-        Actions.editItem(map_id, id)
+        const { map_id } = this.props.match.params
+        Actions.editNewItem(map_id)
     }
 
     onInputChange(e, { name, value }) {

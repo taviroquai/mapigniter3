@@ -19,7 +19,12 @@ class Login extends Component {
     async submit(e) {
         e.preventDefault();
         const { cookies, history } = this.props;
-        Actions.login(cookies, history);
+        const jwt = await Actions.login()
+        if (jwt) {
+            cookies.set('jwt_token', jwt.token);
+            cookies.set('jwt_rtoken', jwt.refreshToken);
+            history.push('/');
+        }
     }
 
     render() {

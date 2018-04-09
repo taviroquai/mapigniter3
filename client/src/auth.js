@@ -1,15 +1,16 @@
 import Store from 'react-observable-store';
+import { Cookies } from 'react-cookie';
+const cookies = new Cookies();
 
 const updateField = (name, value) => {
     Store.set('login.'+name, value);
 };
 
-const logout = (cookies, history) => {
+const logout = async (cb) => {
     var endpoint = Store.get('server.endpoint');
     return new Promise(resolve => {
         fetch(endpoint + '/logout', {
             method: 'GET',
-            credentials: 'include',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -18,62 +19,63 @@ const logout = (cookies, history) => {
         .then(res => res.json())
         .then((data) => {
             Store.set('profile.user', false);
-            cookies.remove('auth_token');
-            cookies.remove('mapigniter3');
-            history.push('/')
+            resolve();
         });
     });
 };
 
-const login = async (cookies, history) => {
-    var auth_token = btoa(Store.get('login.email')+':'+Store.get('login.pwd'));
-    var result = await fetchLogin(auth_token);
-    if (result.profile) {
-        Store.set('profile.user', result.profile);
-        cookies.set('auth_token', auth_token);
-        history.push('/');
-    } else Store.set('login.errors', result);
-}
-
-const fetchLogin = (auth_token) => {
+const login = async (cb) => {
+    var secret = {
+        email: Store.get('login.email'),
+        password: Store.get('login.pwd')
+    }
     var endpoint = Store.get('server.endpoint');
     return new Promise(resolve => {
         fetch(endpoint + '/login', {
-            method: 'GET',
-            credentials: 'include',
+            method: 'POST',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + auth_token
-            }
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(secret)
         })
         .then(res => res.json())
-        .then((data) => {
-            resolve(data);
+        .then(result => {
+            if (result.profile) {
+                Store.set('profile.user', result.profile);
+                resolve(result.jwt);
+            } else {
+                Store.set('login.errors', result);
+                resolve(false);
+            }
         });
     });
 }
 
-const getUser = async (auth_token) => {
-    var result = await fetchUser(auth_token)
-    if (result.user) Store.set('profile.user', result.user)
+const getUser = async () => {
+    var result = await fetchUser()
+    if (result) Store.update('profile', {user: result.user, loading: false})
 }
 
-const fetchUser = (auth_token) => {
-    var endpoint = Store.get('server.endpoint');
+const fetchUser = () => {
+    const auth_token = cookies.get('jwt_token');
+    const endpoint = Store.get('server.endpoint');
     return new Promise(resolve => {
         fetch(endpoint + '/user', {
-            credentials: 'include',
             headers: {
                 'Accept': 'application/json, */*',
                 'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + auth_token
+                'Authorization': 'Bearer ' + auth_token
             }
         })
         .then(res => res.json())
         .then((data) => {
+            console.log('got user', data)
             resolve(data);
-        });
+        })
+        .catch(error => {
+            resolve(false);
+        })
     });
 };
 

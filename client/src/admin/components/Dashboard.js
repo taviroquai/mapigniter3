@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import { I18n } from 'react-i18next';
 import { withStore } from 'react-observable-store';
-import { DashboardLoad } from '../actions.js';
+import Actions from '../actions.js';
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 import { Grid } from 'semantic-ui-react';
 
 class Home extends Component {
 
-    componentDidMount() {
-        setTimeout(() => {
-            DashboardLoad();
-        }, 1)
+    async componentDidMount() {
+        await Actions.DashboardLoad();
     }
 
     render() {

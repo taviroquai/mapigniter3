@@ -10,9 +10,33 @@ const moment = require('moment')
 const Utils = require('./Utils')
 
 class Map extends Model {
+
+    static fillable() {
+        return [
+            'title',
+            'seo_slug',
+            'projection_id',
+            'coordx',
+            'coordy',
+            'publish',
+            'description',
+            'zoom',
+            'image'
+        ]
+    }
+
+    static filterInput(input) {
+        const data = {}
+        const fields = Map.fillable().forEach(f => {
+            if (Object.keys(input).indexOf(f) > -1) data[f] = input[f]
+        })
+        return data
+    }
+
     projection () {
         return this.belongsTo('App/Models/Projection')
     }
+
     layers () {
         return this.hasMany('App/Models/MapLayer')
     }
