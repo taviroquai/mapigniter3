@@ -6,11 +6,11 @@ const Model = use('Model')
 class HttpRequest extends Model {
 
     /**
-     * Validate input
-     * @param  {Object}  input The record input
+     * Validate HTTP request data
+     * @param  {Object}  data The record input
      * @return {Promise}
      */
-    static async validate(input) {
+    static async validate(data) {
         const rules = {
             map_id: 'required',
             http_url: 'required',
@@ -18,7 +18,7 @@ class HttpRequest extends Model {
             http_path: 'required',
             ip: 'required'
         }
-        const validation = await validate(input, rules)
+        const validation = await validate(data, rules)
         return validation.fails() ? validation.messages() : false
     }
 }

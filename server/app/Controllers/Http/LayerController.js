@@ -16,8 +16,12 @@ class LayerController {
     async storeFile ({request, params, response}) {
         try {
 
-            // Get map
+            // Validate map
             const item = await Layer.find(params.id)
+            if (item) throw new Error('Map not found')
+
+            // Set upload valid types
+            // See https://adonisjs.com/docs/4.0/file-uploads
             const post = request.post()
             const field = params.field
             var types

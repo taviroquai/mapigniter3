@@ -5,6 +5,12 @@ const mime = require('mime-types')
 const mmm = require('mmmagic')
 
 class Utils {
+
+    /**
+     * Get file extention
+     * @param  {String}  filename The filename
+     * @return {Promise}
+     */
     static async getFileExtension(filename) {
         const Magic = mmm.Magic
         const magic = new Magic(mmm.MAGIC_MIME_TYPE);
@@ -16,6 +22,13 @@ class Utils {
         })
     }
 
+    /**
+     * Process file upload
+     * @param  {Object}  request the HTTP request
+     * @param  {Array}   types   Valid upload file types
+     * @param  {String}  target  Target folder to move the file into
+     * @return {Promise}
+     */
     static async processFileUpload(request, types, target) {
         const file = request.file('file', { types, size: '4mb' })
         if (!file) return false

@@ -2,6 +2,7 @@
 
 const Model = use('Model')
 const { validate } = use('Validator')
+const pick = require('lodash.pick')
 const Hash = use('Hash')
 const Mail = use('Mail')
 const Env = use('Env')
@@ -19,6 +20,19 @@ class User extends Model {
         * check the hashPassword method
         */
         this.addHook('beforeSave', 'User.hashPassword')
+    }
+
+    /**
+     * Get the fillable attributes
+     * @return {Array} The list of fillable attributes
+     */
+    static fillable() {
+        return [
+            'username',
+            'email',
+            'active',
+            'password'
+        ]
     }
 
     /**
@@ -73,13 +87,7 @@ class User extends Model {
      * @return {Promise}      [description]
      */
     static async saveFromPost(post) {
-        var data = {
-            username: post.username,
-            email: post.email,
-            active: post.active,
-            password: post.password
-        }
-        //if (post.password) data.password = post.password;
+        var data = pick(post, User.fillable())
         var item = await User.find(post.id)
         if (item) {
             item.merge(data)
@@ -90,6 +98,11 @@ class User extends Model {
         return item
     }
 
+    /**
+     * Send recover password email
+     * @param  {String}  url The client base URL
+     * @return {Promise}
+     */
     async sendRecoverPasswordEmail(url) {
         this.recover_token = uuidV4();
         this.save();
@@ -101,6 +114,11 @@ class User extends Model {
         return result
     }
 
+    /**
+     * Validate change password
+     * @param  {object}  post The user input
+     * @return {Promise}
+     */
     async validateChangePassword(post) {
         const rules = {
             'password': 'required|min:6|confirmed'

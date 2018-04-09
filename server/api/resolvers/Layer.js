@@ -147,7 +147,6 @@ const Resolver = {
             .where('id', item.id)
             .fetch()
         result = result.toJSON()
-        console.log(result[0])
         return result[0]
     },
 

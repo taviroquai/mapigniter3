@@ -2,9 +2,14 @@
 
 const Model = use('Model')
 const { validate } = use('Validator')
+const pick = require('lodash.pick')
 
 class Projection extends Model {
 
+    /**
+     * Get fillable attributes
+     * @return {[type]} [description]
+     */
     static fillable() {
         return [
             'srid',
@@ -13,14 +18,20 @@ class Projection extends Model {
         ]
     }
 
+    /**
+     * Filter user input
+     * @param  {Object} input The user input
+     * @return {Object}       the user input filtered
+     */
     static filterInput(input) {
-        const data = {}
-        const fields = Projection.fillable().forEach(f => {
-            if (Object.keys(input).indexOf(f) > -1) data[f] = input[f]
-        })
+        const data = pick(input, Projection.fillable())
         return data
     }
 
+    /**
+     * Layers ORM relationship
+     * @return {Object} The ORM relationship
+     */
     layers () {
         return this.hasMany('App/Models/Layer')
     }

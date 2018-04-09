@@ -2,9 +2,10 @@
 
 const ps = require('child_process')
 const fs = require('fs')
-var gdal = require("gdal")
+const gdal = require("gdal")
 const Model = use('Model')
 const { validate } = use('Validator')
+const pick = require('lodash.pick')
 const uuidV4 = require('uuid/v4')
 const Helpers = use('Helpers')
 const Env = use('Env')
@@ -33,6 +34,10 @@ class Layer extends Model {
       return ['postgis_pass']
     }
 
+    /**
+     * Get fillable attributes
+     * @return {Array} The list of attributes to be filled
+     */
     static fillable() {
         return [
             'title',
@@ -76,18 +81,28 @@ class Layer extends Model {
         ]
     }
 
+    /**
+     * Filter input attributes
+     * @param  {Object} input The user input
+     * @return {Object}       The user input filtered
+     */
     static filterInput(input) {
-        const data = {}
-        const fields = Layer.fillable().forEach(f => {
-            if (Object.keys(input).indexOf(f) > -1) data[f] = input[f]
-        })
+        const data = pick(input, Layer.fillable())
         return data
     }
 
+    /**
+     * Projection ORM relationship
+     * @return {Object} [description]
+     */
     projection () {
         return this.belongsTo('App/Models/Projection')
     }
 
+    /**
+     * MapLayers ORM relationhip
+     * @return {Object} [description]
+     */
     mapLayers () {
         return this.hasMany('App/Models/MapLayer')
     }
@@ -99,24 +114,40 @@ class Layer extends Model {
      */
     static async validate(input) {
         const rules = {
-            title: 'required',
-            seo_slug: 'required',
-            type: 'required',
-            projection_id: 'required'
+            title:          'required',
+            seo_slug:       'required',
+            type:           'required',
+            projection_id:  'required'
         }
         const validation = await validate(input, rules)
         return validation.fails() ? validation.messages() : false
     }
 
+    /**
+     * Layer storage path
+     * @return {String} The relative storage path
+     */
     getStoragePath() {
         return Helpers.publicPath(Env.get('PUBLIC_STORAGE')+'/layer/'+this.id);
     }
 
+    /**
+     * Process data file upload
+     * @param  {Object}  request The HTTP request
+     * @param  {Object}  types   Valid upload file types
+     * @return {Promise}
+     */
     async processFileUpload(request, types) {
         const target = this.getStoragePath()
         return await Utils.processFileUpload(request, types, target)
     }
 
+    /**
+     * Convert Postgis layer to GeoJSON
+     * @param  {Object}  db    The knex database handler
+     * @param  {Object}  query The query params to filter the output features
+     * @return {Promise}
+     */
     async asGeoJSON(db, query) {
         var json = {
             type: 'FeatureCollection',
@@ -166,10 +197,17 @@ class Layer extends Model {
         });
     }
 
+    /**
+     * Get GDAL info of the layer
+     * @param  {Object}  layer The layer object
+     * @return {Promise}
+     */
     static async gdalInfo(layer) {
         return new Promise(resolver => {
             const path = layer.getStoragePath()
             var datasource = '';
+
+            // TODO: other file types
             switch(layer.type) {
                 case 'KML':
                     datasource = path + '/' + layer.kml_filename;
@@ -185,21 +223,18 @@ class Layer extends Model {
                     name:layer.name,
                     extent: layer.getExtent(),
                     srs: layer.srs
-                    //geojson:
                 })
             });
             resolver(result)
-            /*
-            var layer = dataset.layers.get(0);
-            const cmd = 'ogrinfo ' + datasource
-            ps.exec(cmd, (err, stdout, stderr) => {
-                if (err) return resolver(err)
-                resolver(stdout.split("\n"))
-            });
-            */
         })
     }
 
+    /**
+     * Get layer as GeoJSON using GDAL
+     * @param  {Object}  layer         The layer
+     * @param  {Object}  featureTypeId The gdal featureType
+     * @return {Promise}
+     */
     static async gdalGeoJSON(layer, featureTypeId) {
         return new Promise(resolver => {
             const path = layer.getStoragePath()
@@ -209,6 +244,8 @@ class Layer extends Model {
                 return resolver(content)
             }
             var datasource = '';
+
+            // TODO: other layer types
             switch(layer.type) {
                 case 'KML':
                     datasource = path + '/' + layer.kml_filename;
@@ -220,17 +257,6 @@ class Layer extends Model {
             dataset.layers.forEach(function(layer, i) {
                 if (i === featureTypeId) name = layer.name
             });
-            /*
-            var driver, dataset = gdal.open(datasource);
-            gdal.drivers.forEach(drv => {
-                console.log(drv.description)
-                if (/geojson/i.test(drv.description)) driver = drv
-            })
-            const output = driver.createCopy(filename, dataset)
-            output.flush()
-            output.close()
-            resolver(fs.readFileSync(filename, 'utf8'))
-            */
             const cmd = 'ogr2ogr -f "GeoJSON" ' + filename + ' ' + datasource + ' ' + name
             ps.exec(cmd, (err, stdout, stderr) => {
                 if (err) return resolver(err)

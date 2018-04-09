@@ -3,6 +3,7 @@
 const Database = use('Database')
 const Model = use('Model')
 const { validate } = use('Validator')
+const pick = require('lodash.pick')
 const uuidV4 = require('uuid/v4')
 const Helpers = use('Helpers')
 const Env = use('Env')
@@ -11,6 +12,10 @@ const Utils = require('./Utils')
 
 class Map extends Model {
 
+    /**
+     * The fillable attributes
+     * @return {Object} The list of fillable attributes
+     */
     static fillable() {
         return [
             'title',
@@ -25,22 +30,36 @@ class Map extends Model {
         ]
     }
 
+    /**
+     * Filter user input
+     * @param  {Object} input The user input
+     * @return {Object}       the user input filtered
+     */
     static filterInput(input) {
-        const data = {}
-        const fields = Map.fillable().forEach(f => {
-            if (Object.keys(input).indexOf(f) > -1) data[f] = input[f]
-        })
+        const data = pick(input, Map.fillable())
         return data
     }
 
+    /**
+     * Projection ORM relationship
+     * @return {Object} The ORM relationship
+     */
     projection () {
         return this.belongsTo('App/Models/Projection')
     }
 
+    /**
+     * Layers ORM relationship
+     * @return {Object} The ORM relationship
+     */
     layers () {
         return this.hasMany('App/Models/MapLayer')
     }
 
+    /**
+     * Get dashboard activity from HTTP Requests
+     * @return {Promise}
+     */
     static async getDashboardActivity() {
         const sql = `
             SELECT
@@ -79,10 +98,20 @@ class Map extends Model {
         return validation.fails() ? validation.messages() : false
     }
 
+    /**
+     * The map storage path
+     * @return {String} The map storage path
+     */
     getStoragePath() {
         return Helpers.publicPath(Env.get('PUBLIC_STORAGE')+'/map/'+this.id);
     }
 
+    /**
+     * Process data file upload
+     * @param  {Object}  request The HTTP request
+     * @param  {Array}   types   Valid data types
+     * @return {Promise}
+     */
     async processFileUpload(request, types) {
         const target = this.getStoragePath()
         return await Utils.processFileUpload(request, types, target)

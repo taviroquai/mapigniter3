@@ -5,10 +5,16 @@ const Hash = use('Hash')
 
 class UserController {
 
+    /**
+     * Login user from post values
+     * @param  {Object}  request  The HTTP request
+     * @param  {Object}  auth     Auth middleware
+     * @param  {Object}  response The HTTP response
+     * @return {Promise}
+     */
     async login ({ request, auth, response }) {
         try {
           const secret = request.all()
-          console.log('secret', secret)
           const email = secret.email
           const user = await User.query().where('email', email).first()
           if (!user) throw new Error('Invalid email')
@@ -16,18 +22,19 @@ class UserController {
           const token = await auth
             .withRefreshToken()
             .attempt(secret.email, secret.password)
-          /*
-          const pwdCheck = await Hash.verify(secret.password, user.password)
-          if (!pwdCheck) throw new Error('Invalid password')
-          const token = auth.generate(user)
-          */
           response.send({success: true, profile: user, jwt: token})
         } catch (error) {
           response.send({success: false, error: error.message})
         }
     };
 
-    async show ({ auth, params, response }) {
+    /**
+     * Get user profile
+     * @param  {Object}  auth     The auth middleware
+     * @param  {Object}  response The HTTP response
+     * @return {Promise}
+     */
+    async show ({ auth, response }) {
         try {
           var user = await auth.getUser()
           response.send({success: true, user: user});
@@ -36,20 +43,11 @@ class UserController {
         }
     }
 
-    async logout ({ request, response, session }) {
-        try {
-          session.clear()
-          response.send({success: true})
-        } catch (error) {
-          response.send({success: false, error: error.message})
-        }
-    };
-
     /**
-     * User store
-     * @param  {Object}  request  [description]
-     * @param  {Object}  response [description]
-     * @return {Promise}          [description]
+     * Store user data
+     * @param  {Object}  request  The HTTP request
+     * @param  {Object}  response The HTTP response
+     * @return {Promise}
      */
     async store ({request, response}) {
         try {
@@ -68,18 +66,22 @@ class UserController {
 
     /**
      * Start recover password
-     * @param  {[type]}  request  [description]
-     * @param  {[type]}  response [description]
-     * @return {Promise}          [description]
+     * @param  {Object}  request  The HTTP request
+     * @param  {Object}  response The HTTP response
+     * @return {Promise}
      */
     async recover ({ request, response }) {
         try {
             const email = request.input('email')
             const url = request.input('url')
+
+            // Validate user account
             const ids = await User.query().where('email', email).pluck('id')
             if (!ids.length) throw new Error('Account not found.')
             const user = await User.find(ids[0])
             if (!user.active) throw new Error('Account is disabled.')
+
+            // Send recover email
             const result = user.sendRecoverPasswordEmail(url)
             response.send({success: true})
         } catch (error) {
@@ -88,10 +90,10 @@ class UserController {
     };
 
     /**
-     * User reset password store
-     * @param  {Object}  request  [description]
-     * @param  {Object}  response [description]
-     * @return {Promise}          [description]
+     * Reset user password
+     * @param  {Object}  request  The HTTP request
+     * @param  {Object}  response The HTTP response
+     * @return {Promise}
      */
      async resetPassword ({request, response}) {
          try {
@@ -105,7 +107,7 @@ class UserController {
              const errors = await user.validateChangePassword(post)
              if (errors) return response.send({success: false, errors})
 
-             // Reset
+             // Reset user password
              user.password = post.password
              await user.save()
              response.send({success: true});
