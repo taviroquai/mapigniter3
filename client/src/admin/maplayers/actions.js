@@ -23,16 +23,20 @@ const editNewItem = (map_id) => {
 };
 
 const submit = async () => {
-    var item = Store.get('maplayer.form');
-    const client = getGraphqlClient();
-    const query = Queries.addMapLayer;
-    client.mutate({ mutation: query, variables: item }).then(async (r) => {
-        item = Object.assign(item, r.data.addMapLayer);
-        Store.update('maplayer', {form: item});
+    return new Promise(resolve => {
+        var item = Store.get('maplayer.form');
+        const client = getGraphqlClient();
+        const query = Queries.addMapLayer;
+        client.mutate({ mutation: query, variables: item }).then(async (r) => {
+            item = Object.assign(item, r.data.addMapLayer);
+            Store.update('maplayer', {form: item});
+            resolve(true);
+        })
+        .catch(error => {
+            Store.update('maplayer', {error: error.graphQLErrors[0].message, loading: false})
+            resolve(false);
+        });
     })
-    .catch(error => {
-        Store.update('maplayer', {error: error.graphQLErrors[0].message, loading: false})
-    });
 }
 
 const loadMapOptions = async () => {

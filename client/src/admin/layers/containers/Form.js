@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Store, { withStore } from 'react-observable-store';
+import { withRouter } from 'react-router-dom';
 import FormComponent from '../components/Form';
 import Wait from '../../components/Wait';
 import Actions from '../actions.js';
@@ -33,15 +34,15 @@ class Form extends Component {
     }
 
     onSelectFile(e, {name, value, type}) {
-        console.log('select file', type)
         Store.set('layer.form.'+name, value.name);
         Actions.files.dataFile = value;
         Actions.files.field = name;
     }
 
-    onSubmit(e) {
+    async onSubmit(e) {
         e.preventDefault();
-        Actions.submit();
+        const result = await Actions.submit();
+        if (result) this.props.history.push('/admin/layer');
     }
 
     onCreate(e) {
@@ -84,4 +85,4 @@ class Form extends Component {
     }
 }
 
-export default withStore('layer', Form);
+export default withRouter(withStore('layer', Form));

@@ -43,7 +43,7 @@ Route.post('reset', 'UserController.resetPassword');
 
 Route.post('request', 'HttpRequestController.store');
 
-Route.post('map/:id/image', 'MapController.storeImage').middleware('auth');
+Route.post('map/:id/upload/:field', 'MapController.storeFile').middleware('auth');
 Route.post('layer/:id/upload/:field', 'LayerController.storeFile').middleware('auth');
 Route.get('layer/resource/:id/:name', 'LayerController.getResource');
 Route.post('layer/postgis/connect', 'LayerController.postgisConnect').middleware('auth');

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Store, { withStore } from 'react-observable-store';
+import { withRouter } from 'react-router-dom';
 import FormComponent from '../components/Form';
 import Wait from '../../components/Wait';
 import Actions from '../actions.js';
@@ -32,9 +33,10 @@ class Form extends Component {
         Actions.files.image = value;
     }
 
-    onSubmit(e) {
+    async onSubmit(e) {
         e.preventDefault();
-        Actions.submit();
+        const result = await Actions.submit();
+        if (result) this.props.history.push('/admin/map');
     }
 
     onCreate(e) {
@@ -64,4 +66,4 @@ class Form extends Component {
     }
 }
 
-export default withStore('map', Form);
+export default withRouter(withStore('map', Form));

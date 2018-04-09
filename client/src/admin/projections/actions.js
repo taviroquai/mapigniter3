@@ -26,15 +26,19 @@ const editItem = async (id = false) => {
 };
 
 const submit = async () => {
-    var query, item = Store.get('projection.form');
-    const client = getGraphqlClient();
-    if (item.id) query = Queries.updateProjection
-    else query = Queries.addProjection
-    client.mutate({ mutation: query, variables: item }).then(async (r) => {
-        Store.update('projection', {form: item, loading: false});
-    })
-    .catch(error => {
-        Store.update('projection', {error: error.graphQLErrors[0].message, loading: false})
+    return new Promise(resolve => {
+        var query, item = Store.get('projection.form');
+        const client = getGraphqlClient();
+        if (item.id) query = Queries.updateProjection
+        else query = Queries.addProjection
+        client.mutate({ mutation: query, variables: item }).then(async (r) => {
+            Store.update('projection', {form: item, error: false, loading: false});
+            resolve(true)
+        })
+        .catch(error => {
+            Store.update('projection', {error: error.graphQLErrors[0].message, loading: false})
+            resolve(false)
+        })
     })
 }
 

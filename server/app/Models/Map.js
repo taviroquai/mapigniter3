@@ -83,9 +83,9 @@ class Map extends Model {
         return Helpers.publicPath(Env.get('PUBLIC_STORAGE')+'/map/'+this.id);
     }
 
-    async processImageUpload(request, field, types) {
+    async processFileUpload(request, types) {
         const target = this.getStoragePath()
-        return await Utils.processFileUpload(request, field, types, target)
+        return await Utils.processFileUpload(request, types, target)
     }
 }
 

@@ -91,19 +91,24 @@ const editItem = async (id = false) => {
 };
 
 const submit = async () => {
-    var query, item = Store.get('layer.form');
-    const client = getGraphqlClient();
-    if (item.id) query = Queries.updateLayer
-    else query = Queries.addLayer
-    client.mutate({ mutation: query, variables: item }).then(async (r) => {
-        item = Object.assign(item, item.id ? r.data.updateLayer : r.data.addLayer);
-        Store.update('layer', {form: item});
-        if (files.image) await submitFile(item.id, files.image, 'image')
-        if (files.dataFile) await submitFile(item.id, files.dataFile, files.field)
-    })
-    .catch(error => {
-        Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
-    })
+    return new Promise(resolve => {
+        var result, query, item = Store.get('layer.form');
+        const client = getGraphqlClient();
+        if (item.id) query = Queries.updateLayer
+        else query = Queries.addLayer
+        client.mutate({ mutation: query, variables: item }).then(async (r) => {
+            item = Object.assign(item, item.id ? r.data.updateLayer : r.data.addLayer);
+            Store.update('layer', {form: item});
+            result = true
+            if (files.image) result = result && await submitFile(item.id, files.image, 'image')
+            if (files.dataFile) result = result && await submitFile(item.id, files.dataFile, files.field)
+            resolve(result)
+        })
+        .catch(error => {
+            Store.update('layer', {error: error.graphQLErrors[0].message, loading: false})
+            resolve(false)
+        })
+    });
 }
 
 const removeItem = async (item) => {
@@ -171,12 +176,17 @@ const getWMSCapabilities = async () => {
                 var options = parsedResult.Capability.Layer.Layer.map(l => {
                     return {key: l.Name, value: l.Name, text: l.Title, crs: l.CRS}
                 });
-                Store.update('layer', {wms_options: options});
+                return Store.update('layer', {
+                    wms_options: options,
+                    loading: false,
+                    error: false
+                });
             }
-        } else Store.update('layer', {loading: false, error: true})
+        }
+        Store.update('layer', {loading: false, error: true})
     }).catch(err => {
         clearTimeout(t)
-        Store.update('layer', {loading: false, error: false})
+        Store.update('layer', {loading: false, error: true})
     });
 }
 
@@ -206,6 +216,8 @@ const getWFSCapabilities = async () => {
                         }
                     });
                     Store.update('layer', {wfs_options: options});
+                } else {
+                    Store.update('layer', {loading: false, error: true})
                 }
             });
         } else Store.update('layer', {loading: false, error: true})
@@ -216,16 +228,25 @@ const getWFSCapabilities = async () => {
 }
 
 const submitFile = async (layer_id, file, field) => {
-    const url = Store.get('server.endpoint') + '/layer/'+layer_id+'/upload/'+field;
+    const url = Store.get('server.endpoint')
+        + '/layer/' + layer_id + '/upload/' + field;
     const formData = new FormData();
     formData.append('file', file);
     Store.update('layer', {loading: true, error: false});
     const result = await Server.post(url, formData, true);
     const layer = Store.get('layer.form');
     if (result && result.success) {
-        Store.update('layer', {loading: false, form: {...layer, [field]: result.filename}})
+        Store.update('layer', {
+            loading: false,
+            form: {
+                ...layer,
+                [field]: result.filename
+            }
+        });
+        return true
     } else {
         Store.update('layer', {loading: false, error: result.error})
+        return false
     }
 }
 

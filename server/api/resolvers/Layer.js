@@ -94,7 +94,7 @@ const Resolver = {
 
         // Validate input
         const errors = await Layer.validate(args)
-        if (errors) throw new ErrorInvalidMap({
+        if (errors) throw new ErrorInvalidLayer({
             message: 'Invalid layer data',
             data: errors
         })

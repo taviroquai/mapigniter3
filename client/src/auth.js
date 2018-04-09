@@ -70,7 +70,6 @@ const fetchUser = () => {
         })
         .then(res => res.json())
         .then((data) => {
-            console.log('got user', data)
             resolve(data);
         })
         .catch(error => {

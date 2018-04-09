@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Store, { withStore } from 'react-observable-store';
+import { withRouter } from 'react-router-dom';
 import FormComponent from '../components/Form';
 import Wait from '../../components/Wait';
 import Actions from '../actions.js';
@@ -16,9 +17,10 @@ class Form extends Component {
         Store.set('projection.form.'+name, value);
     }
 
-    onSubmit(e) {
+    async onSubmit(e) {
         e.preventDefault();
-        Actions.submit();
+        const result = await Actions.submit();
+        if (result) this.props.history.push('/admin/projection');
     }
 
     onCreate(e) {
@@ -38,4 +40,4 @@ class Form extends Component {
     }
 }
 
-export default withStore('projection', Form);
+export default withRouter(withStore('projection', Form));

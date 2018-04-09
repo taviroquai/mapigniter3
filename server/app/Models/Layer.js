@@ -112,7 +112,7 @@ class Layer extends Model {
         return Helpers.publicPath(Env.get('PUBLIC_STORAGE')+'/layer/'+this.id);
     }
 
-    async processFileUpload(request, field, types) {
+    async processFileUpload(request, types) {
         const target = this.getStoragePath()
         return await Utils.processFileUpload(request, types, target)
     }

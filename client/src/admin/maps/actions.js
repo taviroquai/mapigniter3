@@ -34,17 +34,22 @@ const editItem = async (id = false) => {
 };
 
 const submit = async () => {
-    var query, item = Store.get('map.form');
-    const client = getGraphqlClient();
-    if (item.id) query = Queries.updateMap
-    else query = Queries.addMap
-    client.mutate({ mutation: query, variables: item }).then(async (r) => {
-        item = Object.assign(item, item.id ? r.data.updateMap : r.data.addMap);
-        Store.update('map', {form: item});
-        if (files.image) await uploadMapImage(item, files.image)
-    })
-    .catch(error => {
-        Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
+    return new Promise(resolve => {
+        var result, query, item = Store.get('map.form');
+        const client = getGraphqlClient();
+        if (item.id) query = Queries.updateMap
+        else query = Queries.addMap
+        client.mutate({ mutation: query, variables: item }).then(async (r) => {
+            item = Object.assign(item, item.id ? r.data.updateMap : r.data.addMap);
+            Store.update('map', {form: item, error: false, loading: false});
+            result = true
+            if (files.image) result = result && await uploadMapImage(item, files.image)
+            resolve(result)
+        })
+        .catch(error => {
+            Store.update('map', {error: error.graphQLErrors[0].message, loading: false})
+            resolve(false)
+        })
     })
 }
 
@@ -107,12 +112,14 @@ const uploadMapImage = async (map, file) => {
     const url = Store.get('server.endpoint') + '/map';
     Store.update('map', {loading: true, error: false});
     const formData = new FormData();
-    formData.append('image', file);
-    const result = await Server.post(url+'/'+map.id+'/image', formData, true);
+    formData.append('file', file);
+    const result = await Server.post(url+'/'+map.id+'/upload/image', formData, true);
     if (result && result.success) {
-        Store.update('map', {loading: false, form: {...map, image: result.image}})
+        Store.update('map', {loading: false, form: {...map, image: result.filename}})
+        return true
     } else {
         Store.update('map', {loading: false, error: result.error})
+        return false
     }
 }
 

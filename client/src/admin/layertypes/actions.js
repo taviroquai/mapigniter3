@@ -26,16 +26,20 @@ const editItem = async (id = false) => {
 };
 
 const submit = async () => {
-    var query, item = Store.get('layertype.form');
-    const client = getGraphqlClient();
-    if (item.id) query = Queries.updateLayerType
-    else query = Queries.addLayerType
-    client.mutate({ mutation: query, variables: item }).then(async (r) => {
-        Store.update('layertype', {form: item, loading: false, error: null});
+    return new Promise(resolve => {
+        var query, item = Store.get('layertype.form');
+        const client = getGraphqlClient();
+        if (item.id) query = Queries.updateLayerType
+        else query = Queries.addLayerType
+        client.mutate({ mutation: query, variables: item }).then(async (r) => {
+            Store.update('layertype', {form: item, loading: false, error: null});
+            resolve(true)
+        })
+        .catch(error => {
+            Store.update('layertype', {error: error.graphQLErrors[0].message, loading: false})
+            resolve(false)
+        });
     })
-    .catch(error => {
-        Store.update('layertype', {error: error.graphQLErrors[0].message, loading: false})
-    });
 }
 
 const removeItem = async (item) => {
