@@ -11,7 +11,18 @@ The web client was built with:
  2. Apollo Client - Graphql HTTP client
  3. SemanticUI - Full featured and customizable UI framework
 
-### Client File Struture
+### Client setup
+
+```
+$ cd client
+$ npm install # answer 1st option to all semantic-ui questions
+$ npm run theme
+# edit src/config.json
+$ npm run start (for just react dev)
+$ npm run build
+```
+
+### Client Folder Struture
 
 The file structure was inpired by Redux:  
  1. Components - Contains React components
@@ -25,7 +36,19 @@ The server is built using:
  1. AdonisJS framework - Used for data schema migrations, HTTP and Authentication (JSON Web Tokens)
  2. ApolloServer - Graphql server for most HTTP communication (except file upload and other non-API features)
 
-### Server File Struture
+### Server setup
+
+```
+$ cd server
+$ cp .env.example .env # edit .env and configure PostgreSQL database connection
+$ npm install
+$ adonis key:generate
+$ adonis migration:run
+$ adonis seed
+$ adonis serve -dev
+```
+
+### Server Folder Struture
 
  1. api - contains Graphql schema and resolvers
  2. app - contains HTTP controllers and Models for Authentication and other non-API features
