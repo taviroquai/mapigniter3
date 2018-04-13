@@ -16,15 +16,24 @@ const { graphqlAdonis, graphiqlAdonis  } = require('apollo-server-adonis');
 const { formatError } = require('apollo-errors');
 const graphqlPublicSchema = require('../api/PublicSchema');
 const graphqlAdminSchema = require('../api/AdminSchema');
-const Route = use('Route')
+const Route = use('Route');
+
+const graphqlOptions = async (ctx) => {
+    const { _auth_ } = ctx
+    return {
+        formatError,
+        schema: graphqlAdminSchema,
+        context: { auth: _auth_ }
+    }
+}
 
 Route.on('/').render('welcome')
 
 Route.post('/api', graphqlAdonis({ formatError, schema: graphqlPublicSchema }));
 Route.get('/api', graphqlAdonis({ formatError, schema: graphqlPublicSchema }));
 
-Route.post('/api/admin', graphqlAdonis({ formatError, schema: graphqlAdminSchema })).middleware('auth');
-Route.get('/api/admin', graphqlAdonis({ formatError, schema: graphqlAdminSchema })).middleware('auth');
+Route.post('/api/admin', graphqlAdonis(graphqlOptions)).middleware('auth');
+Route.get('/api/admin', graphqlAdonis(graphqlOptions)).middleware('auth');
 
 Route.get('/graphiql',
     graphiqlAdonis({
