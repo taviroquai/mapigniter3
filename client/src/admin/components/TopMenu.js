@@ -3,7 +3,6 @@ import { I18n } from 'react-i18next';
 import { Menu, Button, Flag } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import { withStore } from 'react-observable-store';
-import { withCookies } from 'react-cookie';
 import imgLogo from '../assets/images/logo.png';
 
 class TopMenu extends Component {
@@ -71,4 +70,4 @@ class TopMenu extends Component {
     }
 }
 
-export default withCookies(withStore('profile', TopMenu));
+export default withStore('profile', TopMenu);

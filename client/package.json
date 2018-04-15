@@ -66,18 +66,22 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "deploy": "node scripts/deploy.js",
-    "test": "node scripts/test.js --env=jsdom"
+    "test": "node scripts/test.js --env=jsdom --no-cache",
+    "coverage": "node scripts/test.js --env=jsdom --coverage --no-cache"
   },
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx,mjs}"
     ],
+    "coveragePathIgnorePatterns": [
+      "src/semantic/"
+    ],
     "setupFiles": [
       "<rootDir>/config/polyfills.js"
     ],
     "testMatch": [
-      "<rootDir>/src/**/__tests__/**/*.{js,jsx,mjs}",
-      "<rootDir>/src/**/?(*.)(spec|test).{js,jsx,mjs}"
+      "<rootDir>/tests/**/__tests__/**/*.{js,jsx,mjs}",
+      "<rootDir>/tests/**/?(*.)(spec|test).{js,jsx,mjs}"
     ],
     "testEnvironment": "node",
     "testURL": "http://localhost",
@@ -87,7 +91,7 @@
       "^(?!.*\\.(js|jsx|mjs|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
     },
     "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs)$"
+      "[/\\\\]node_modules[/\\\\](?!(ol)/).+\\.(js|jsx|mjs)$"
     ],
     "moduleNameMapper": {
       "^react-native$": "react-native-web"
@@ -105,7 +109,15 @@
   "babel": {
     "presets": [
       "react-app"
-    ]
+    ],
+    "env": {
+      "test": {
+        "plugins": [
+          "dynamic-import-node",
+          "transform-es2015-modules-commonjs"
+        ]
+      }
+    }
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -113,12 +125,19 @@
   "devDependencies": {
     "ajv": "^6.3.0",
     "babel-eslint": "^7.2.3",
+    "babel-plugin-dynamic-import-node": "^1.2.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "canvas": "^1.6.10",
+    "enzyme": "^3.3.0",
+    "enzyme-adapter-react-16": "^1.1.1",
     "eslint": "^4.10.0",
     "eslint-config-react-app": "^2.1.0",
     "eslint-plugin-flowtype": "^2.39.1",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-react": "^7.4.0",
-    "gulp": "^3.9.1"
+    "gulp": "^3.9.1",
+    "isomorphic-fetch": "^2.2.1",
+    "nock": "^9.2.5"
   }
 }
