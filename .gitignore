@@ -1,6 +1,7 @@
 client/node_modules
 client/public/config.json
 client/build
+client/coverage
 client/package-lock.json
 client/yarn.lock
 
