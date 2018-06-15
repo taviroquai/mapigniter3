@@ -91,7 +91,7 @@ class PublicMap extends Component {
      */
     initMap(props) {
         this.olMap.setTarget(document.getElementById('map'));
-        var coords = [parseFloat(props.coordy), parseFloat(props.coordx)];
+        var coords = [parseFloat(props.coordx), parseFloat(props.coordy)];
         coords = OlProj.transform(coords, 'EPSG:4326', 'EPSG:3857');
         this.olMap.getView().setCenter(coords);
         this.olMap.getView().setZoom(props.zoom);
