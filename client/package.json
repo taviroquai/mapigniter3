@@ -42,7 +42,7 @@
     "react-cookie": "^2.1.2",
     "react-dev-utils": "^4.2.1",
     "react-dom": "^16.1.1",
-    "react-froala-wysiwyg": "^2.7.6",
+    "react-froala-wysiwyg": "^2.9.4-1",
     "react-i18next": "^7.3.0",
     "react-observable-store": "^1.1.0",
     "react-router-dom": "^4.2.2",

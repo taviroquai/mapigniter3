@@ -18,7 +18,7 @@ class LayerController {
 
             // Validate map
             const item = await Layer.find(params.id)
-            if (item) throw new Error('Map not found')
+            if (!item) throw new Error('Layer not found')
 
             // Set upload valid types
             // See https://adonisjs.com/docs/4.0/file-uploads
